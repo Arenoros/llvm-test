@@ -1,0 +1,5 @@
+[requires]
+llvm-core/13.0.0
+gtest/1.11.0
+[build_requires]
+winflexbison/2.5.24
