@@ -2,7 +2,19 @@
 #include <fstream>
 #include <llvm/IR/Module.h>
 #include <llvm/Support/TargetSelect.h>
-
+#include "llvm/ADT/StringRef.h"
+#include "llvm/ExecutionEngine/JITSymbol.h"
+#include "llvm/ExecutionEngine/Orc/CompileUtils.h"
+#include "llvm/ExecutionEngine/Orc/Core.h"
+#include "llvm/ExecutionEngine/Orc/ExecutionUtils.h"
+#include "llvm/ExecutionEngine/Orc/IRCompileLayer.h"
+#include "llvm/ExecutionEngine/Orc/JITTargetMachineBuilder.h"
+#include "llvm/ExecutionEngine/Orc/RTDyldObjectLinkingLayer.h"
+#include "llvm/ExecutionEngine/SectionMemoryManager.h"
+#include <llvm/Analysis/LoopAnalysisManager.h>
+#include <llvm/Analysis/CGSCCPassManager.h>
+#include <llvm/Passes/PassBuilder.h>
+#include <llvm/Analysis/AliasAnalysis.h>
 #include "gram.h"
 
 int main1(int argc, char* argv[]) {
@@ -18,6 +30,24 @@ int main1(int argc, char* argv[]) {
     delete block;
     yylex_destroy(scanner);
     return 0;
+}
+
+void Optimization(Module* modl) {
+    LoopAnalysisManager LAM;
+    FunctionAnalysisManager FAM;
+    CGSCCAnalysisManager CGAM;
+    ModuleAnalysisManager MAM;
+    PassBuilder PB;
+    FAM.registerPass([&] { return PB.buildDefaultAAPipeline(); });
+    PB.registerModuleAnalyses(MAM);
+    PB.registerCGSCCAnalyses(CGAM);
+    PB.registerFunctionAnalyses(FAM);
+    PB.registerLoopAnalyses(LAM);
+    PB.crossRegisterProxies(LAM, FAM, CGAM, MAM);
+    ModulePassManager MPM = PB.buildPerModuleDefaultPipeline(PassBuilder::OptimizationLevel::O2);
+
+    // Optimize the IR!
+    MPM.run(*modl, MAM);
 }
 
 int main() {
@@ -44,6 +74,7 @@ int main() {
     ast->emit(ctx);
     Builder.CreateRetVoid();
 
+    Optimization(TheModule);
     TheModule->dump();
 
     std::error_code ErrStr;
