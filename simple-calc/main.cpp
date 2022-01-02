@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
         }
         break;
     } while (1);
-    yy_scan_string("2323+23\n", scanner);
+    yy_scan_string("2+2*2\n", scanner);
     int rv = yyparse(scanner);
 
     yylex_destroy(scanner);

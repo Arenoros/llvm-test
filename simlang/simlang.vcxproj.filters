@@ -13,34 +13,45 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="SimLang">
+      <UniqueIdentifier>{15283b52-24c5-47c3-979f-63e084b226c5}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="calc.cpp">
+    <ClCompile Include="gram.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="calc.flex.cpp">
+    <ClCompile Include="gram.flex.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="calc.tab.cpp">
+    <ClCompile Include="gram.tab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="calc.h">
+    <ClInclude Include="gram.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Bison Include="calc.y">
+    <Flex Include="gram.l">
+      <Filter>Resource Files</Filter>
+    </Flex>
+  </ItemGroup>
+  <ItemGroup>
+    <Bison Include="gram.y">
       <Filter>Resource Files</Filter>
     </Bison>
   </ItemGroup>
   <ItemGroup>
-    <Flex Include="calc.l">
-      <Filter>Resource Files</Filter>
-    </Flex>
+    <None Include="test1.sl">
+      <Filter>SimLang</Filter>
+    </None>
   </ItemGroup>
 </Project>

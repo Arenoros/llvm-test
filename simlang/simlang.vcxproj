@@ -21,8 +21,8 @@
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
-    <ProjectGuid>{06d13e83-ac07-497e-a31a-f15752989baf}</ProjectGuid>
-    <RootNamespace>simplecalc</RootNamespace>
+    <ProjectGuid>{97be4103-5116-4168-aa2a-9ab2def44d30}</ProjectGuid>
+    <RootNamespace>simlang</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -150,19 +150,25 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Flex Include="calc.l" />
-  </ItemGroup>
-  <ItemGroup>
-    <Bison Include="calc.y" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="calc.cpp" />
-    <ClCompile Include="calc.flex.cpp" />
-    <ClCompile Include="calc.tab.cpp" />
+    <ClCompile Include="gram.cpp" />
+    <ClCompile Include="gram.flex.cpp" />
+    <ClCompile Include="gram.tab.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="calc.h" />
+    <Flex Include="gram.l">
+      <FileType>Document</FileType>
+    </Flex>
+    <Bison Include="gram.y">
+      <FileType>Document</FileType>
+    </Bison>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ast.h" />
+    <ClInclude Include="gram.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="test1.sl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
