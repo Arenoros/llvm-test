@@ -11,7 +11,6 @@
 %option header-file="gram.lex.h"
 
 %option yylineno
-%option noyywrap
 
 %x STR
 
