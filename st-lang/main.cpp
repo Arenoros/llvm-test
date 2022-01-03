@@ -7,7 +7,7 @@ int main() {
     yyscan_t scanner;
     yylex_init(&scanner);
     FILE* fin = nullptr;
-    auto err = fopen_s(&fin, "test1.sl", "r+");
+    auto err = fopen_s(&fin, "test1.txt", "r");
     if (err) {
         char errmsg[255] = {0};
         strerror_s(errmsg, 254, err);
@@ -16,7 +16,9 @@ int main() {
     }
     yyset_in(fin, scanner);
     // yy_scan_string("2323+23\n", scanner);
-
+    YYSTYPE t;
+    YYLTYPE l;
+    //int res = yylex(&t, &l, scanner);
     int rv = yyparse(scanner);
 
     yylex_destroy(scanner);
