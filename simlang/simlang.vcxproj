@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClInclude Include="ast.h" />
     <ClInclude Include="gram.h" />
+    <ClInclude Include="jit.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="test1.sl" />

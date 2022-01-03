@@ -15,6 +15,12 @@
 #include <llvm/Analysis/CGSCCPassManager.h>
 #include <llvm/Passes/PassBuilder.h>
 #include <llvm/Analysis/AliasAnalysis.h>
+#include <llvm/ExecutionEngine/ExecutionEngine.h>
+#include <llvm/IR/LegacyPassManager.h>
+#include <llvm/Support/Host.h>
+#include <llvm/Support/TargetRegistry.h>
+#include <llvm/ExecutionEngine/Orc/LLJIT.h>
+#include "jit.h"
 #include "gram.h"
 
 int main1(int argc, char* argv[]) {
@@ -32,7 +38,7 @@ int main1(int argc, char* argv[]) {
     return 0;
 }
 
-void Optimization(Module* modl) {
+void Optimization(std::unique_ptr<Module>& modl) {
     LoopAnalysisManager LAM;
     FunctionAnalysisManager FAM;
     CGSCCAnalysisManager CGAM;
@@ -52,16 +58,43 @@ void Optimization(Module* modl) {
 
 int main() {
     using namespace llvm;
-    InitializeNativeTarget();
-    LLVMContext Context;
-    IRBuilder<> Builder(Context);
-    Module* TheModule = new llvm::Module("jsk jit", Context);
+    // InitializeNativeTarget();
+    InitializeAllTargetInfos();
+    InitializeAllTargets();
+    InitializeAllTargetMCs();
+    InitializeAllAsmParsers();
+    InitializeAllAsmPrinters();
 
-    Type* voidType = Type::getVoidTy(Context);
+    auto Context = std::make_unique<LLVMContext>();
+    IRBuilder<> Builder(*Context);
+    auto TheModule = std::make_unique<Module>("jsk jit", *Context);  //    new llvm::Module("jsk jit", Context);
+
+    auto TargetTriple = sys::getDefaultTargetTriple();
+    TheModule->setTargetTriple(TargetTriple);
+    std::string Error;
+    auto Target = TargetRegistry::lookupTarget(TargetTriple, Error);
+
+    // Print an error and exit if we couldn't find the requested target.
+    // This generally occurs if we've forgotten to initialise the
+    // TargetRegistry or we have a bogus target triple.
+    if (!Target) {
+        errs() << Error;
+        return 1;
+    }
+
+    auto CPU = "generic";
+    auto Features = "";
+
+    TargetOptions opt;
+    auto RM = Optional<Reloc::Model>();
+    auto TheTargetMachine = Target->createTargetMachine(TargetTriple, CPU, Features, opt, RM);
+    TheModule->setDataLayout(TheTargetMachine->createDataLayout());
+
+    Type* voidType = Type::getVoidTy(*Context);
     auto main = TheModule->getOrInsertFunction("main", voidType);
     Function* func_main = cast<Function>(main.getCallee());
     func_main->setCallingConv(CallingConv::C);
-    BasicBlock* block = BasicBlock::Create(Context, "code", func_main);
+    BasicBlock* block = BasicBlock::Create(*Context, "code", func_main);
     Builder.SetInsertPoint(block);
     llvm_ctx ctx(*TheModule, Builder, func_main);
 
@@ -77,8 +110,29 @@ int main() {
     Optimization(TheModule);
     TheModule->dump();
 
+    /* Not work
+    auto jit = orc::LLJITBuilder().create();
+    if (!jit) {
+        jit.takeError();
+        return 1;
+    }
+    auto& jit_t = jit.get();
+    auto Err = jit_t->addIRModule(orc::ThreadSafeModule(std::move(TheModule), std::move(Context)));
+    if (Err) {
+        return 2;
+    }
+    auto sym = jit_t->lookup("main");
+    if (!sym) {
+        auto err = sym.takeError();
+        return 3;
+    }
+    auto* entry = (void (*)())sym->getAddress();
+    entry();
+    */
+
     std::error_code ErrStr;
     raw_fd_ostream bitcode("a.out.bc", ErrStr);
+    
     WriteBitcodeToFile(*TheModule, bitcode);
     bitcode.close();
     yylex_destroy(scanner);
