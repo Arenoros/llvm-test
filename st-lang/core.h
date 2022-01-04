@@ -3,7 +3,14 @@
 #include <cstdint>
 #include "ast.h"
 typedef intptr_t cnum;
-union obj {
-    ast::int64_expr_t* i64;
-    ast::float64_expr_t* f64;
-};
+
+inline char* creat_strcopy(const char* str) {
+    size_t len = strlen(str);
+    char* cpy = (char*)malloc(len + 1);
+    if (!cpy) {
+        ERROR_MSG("Out of memory. Bailing out!\n");
+    }
+    strcpy_s(cpy, len, str);
+    cpy[len] = 0;
+    return cpy;
+}

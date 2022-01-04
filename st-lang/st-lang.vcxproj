@@ -143,9 +143,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ast.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="parser.flex.cpp" />
     <ClCompile Include="parser.tab.cpp" />
+    <ClCompile Include="visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Flex Include="parser.l" />
@@ -158,10 +160,19 @@
   <ItemGroup>
     <ClInclude Include="ast.h" />
     <ClInclude Include="core.h" />
+    <ClInclude Include="flex_priv.h" />
+    <ClCompile Include="flex_priv.cpp" />
     <ClInclude Include="parser.h" />
+    <ClInclude Include="parser_priv.h" />
+    <ClInclude Include="symtable.h" />
+    <ClInclude Include="symtable.hxx" />
+    <ClInclude Include="visitor.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test1.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="absyntax.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

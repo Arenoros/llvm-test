@@ -24,6 +24,15 @@
     <ClCompile Include="parser.tab.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ast.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="visitor.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="flex_priv.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="parser.l">
@@ -31,13 +40,28 @@
     </Flex>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="parser.h">
+    <ClInclude Include="parser_priv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="visitor.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symtable.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="symtable.hxx">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="flex_priv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -50,5 +74,10 @@
     <Text Include="test1.txt">
       <Filter>Resource Files</Filter>
     </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="absyntax.def">
+      <Filter>Header Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

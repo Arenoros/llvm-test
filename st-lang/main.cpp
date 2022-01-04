@@ -2,6 +2,7 @@
 #include <string.h>
 #include <iostream>
 #include "parser.h"
+#include "parser_priv.h"
 
 int main() {
     yyscan_t scanner;
