@@ -143,6 +143,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="add_en_eno_param_decl.cpp" />
     <ClCompile Include="ast.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="parser.flex.cpp" />
@@ -158,6 +159,7 @@
     </Bison>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="add_en_eno_param_decl.h" />
     <ClInclude Include="ast.h" />
     <ClInclude Include="core.h" />
     <ClInclude Include="flex_priv.h" />
@@ -172,7 +174,7 @@
     <Text Include="test1.txt" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="absyntax.def" />
+    <ClInclude Include="absyntax.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

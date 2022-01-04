@@ -111,7 +111,7 @@ null_visitor_c::~null_visitor_c(void) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
@@ -150,7 +150,7 @@ null_visitor_c::~null_visitor_c(void) {
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)                                                \
     void* fcall_visitor_c::visit(class_name_c* symbol) VISIT_METHOD;
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef VISIT_METHOD
 
@@ -266,7 +266,7 @@ void* iterator_visitor_c::visit_list(list_c* list) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
@@ -316,7 +316,7 @@ void fcall_iterator_visitor_c::suffix_fcall(symbol_c* symbol) {
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)                                                \
     void* fcall_iterator_visitor_c::visit(class_name_c* symbol) VISIT_METHOD;
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef VISIT_METHOD
 
@@ -469,7 +469,7 @@ void* search_visitor_c::visit_list(list_c* list) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef SYM_LIST
 #undef SYM_TOKEN

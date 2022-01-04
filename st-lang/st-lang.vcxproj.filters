@@ -33,6 +33,9 @@
     <ClCompile Include="flex_priv.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="add_en_eno_param_decl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <Flex Include="parser.l">
@@ -64,6 +67,12 @@
     <ClInclude Include="flex_priv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="absyntax.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="add_en_eno_param_decl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Bison Include="parser.y">
@@ -74,10 +83,5 @@
     <Text Include="test1.txt">
       <Filter>Resource Files</Filter>
     </Text>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="absyntax.def">
-      <Filter>Header Files</Filter>
-    </None>
   </ItemGroup>
 </Project>

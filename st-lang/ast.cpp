@@ -474,7 +474,7 @@ void list_c::clear(void) {
         return visitor.visit(this);                                                                                    \
     }
 
-#include "absyntax.def"
+#include "absyntax.h"
 
 #undef SYM_LIST
 #undef SYM_TOKEN

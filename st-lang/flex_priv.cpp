@@ -4,7 +4,10 @@
 #include "ast.h"
 
 #include "core.h"
-#include "felx_priv.h"
+#include "flex_priv.h"
+
+#include <cstdarg>
+
 #include "parser_priv.h"
 
 /******************************************************/
@@ -14,6 +17,8 @@
 /* Part 1: Concepts and Function Blocks,              */
 /* Version 1.0 – Official Release                   */
 /******************************************************/
+runtime_options_t runtime_options;
+
 bool get_opt_safe_extensions() {
     return runtime_options.safe_extensions;
 }
@@ -221,17 +226,19 @@ char* strdup3(const char* a, const char* b, const char* c) {
 /***********************************************************************/
 /***********************************************************************/
 
-int stage2__(const char* filename, symbol_c** tree_root_ref);
+void error_exit(const char* file_name, int line_no, const char* errmsg, ...) {
+    va_list argptr;
+    va_start(argptr, errmsg); /* second argument is last fixed pamater of error_exit() */
 
-int stage1_2(const char* filename, symbol_c** tree_root_ref) {
-    /* NOTE: we only call stage2 (bison - syntax analysis) directly, as stage 2 will itself call stage1 (flex - lexical
-     * analysis) automatically as needed
-     */
+    fprintf(stderr, "\nInternal compiler error in file %s at line %d", file_name, line_no);
+    if (errmsg != NULL) {
+        fprintf(stderr, ": ");
+        vfprintf(stderr, errmsg, argptr);
+    } else {
+        fprintf(stderr, ".");
+    }
+    fprintf(stderr, "\n");
+    va_end(argptr);
 
-    /* NOTE: Since we do not call stage1__ (flex) directly, we cannot directly pass any parameters to that function
-     * either. In this case, we use callback functions, i.e. stage1__ (i.e. flex) will call functions defined in this
-     * file whenever it needs info/parameters coming from stage1_2(). These callback functions will get their data from
-     * local (to this file) global variables... We now set those variables...
-     */
-    return stage2__(filename, tree_root_ref);
+    exit(EXIT_FAILURE);
 }

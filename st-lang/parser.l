@@ -41,6 +41,7 @@
 %option noyy_top_state
 
 %{
+#define _CRT_SECURE_NO_WARNINGS
    #include <string>
    #include "parser.tab.h"
    #include "flex_priv.h"

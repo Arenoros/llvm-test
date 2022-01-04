@@ -1,5 +1,8 @@
 %{
-#include <string.h>	/* required for strdup()  */
+
+#define _CRT_SECURE_NO_WARNINGS
+#include <string.h>	/* required for creat_strcopy()  */
+#include "ast.h"
 
 /* Macros used to pass the line and column locations when
  * creating a new object for the abstract syntax tree.
@@ -80,7 +83,7 @@ poutype_identifier_c *il_operator_c_2_poutype_identifier_c(symbol_c *il_operator
 
 /* return if current token is a syntax element */
 /* ERROR_CHECK_BEGIN */
-bool is_current_syntax_token();
+bool is_current_syntax_token(int token);
 /* ERROR_CHECK_END */
 
 /* print an error message */
@@ -100,8 +103,7 @@ void print_err_msg(int first_line,
 %define parse.error verbose
 %locations
 %code requires {
-#include "core.h"
-
+	#include "parser.h"
 #if ! defined YYLTYPE && ! defined YYLTYPE_IS_DECLARED
     typedef struct YYLTYPE {
         int         first_line;
@@ -119,8 +121,10 @@ void print_err_msg(int first_line,
 }
 
 %param { yyscan_t scanner }
+%parse-param { symbol_c** tree_root }
 %code {
     #include "parser_priv.h"
+
 }
 
 %union {
@@ -1488,9 +1492,9 @@ prev_declared_program_type_name:           prev_declared_program_type_name_token
 /***************************/
 library:
   /* empty */
-	{if (tree_root == NULL)
-	  tree_root = new library_c();
-	 $$ = (list_c *)tree_root;
+	{if (*tree_root == NULL)
+	  *tree_root = new library_c();
+	 $$ = (list_c *)(*tree_root);
 	}
 | library library_element_declaration
 	{$$ = $1; $$->add_element($2);}
@@ -1821,7 +1825,7 @@ integer_literal:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
 | integer_type_name '#' error
 	{$$ = NULL; 
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for integer literal.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for integer literal.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for integer literal."); yyclearin;}
 	 yyerrok;
 	}
@@ -1854,7 +1858,7 @@ real_literal:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between real type name and value in real literal."); yynerrs++;}
 | real_type_name '#' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for real literal.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for real literal.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for real literal."); yyclearin;}
 	 yyerrok;
 	}
@@ -1904,7 +1908,7 @@ bit_string_literal:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
 | bit_string_type_name '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for bit string literal.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for bit string literal.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for bit string literal."); yyclearin;}
 	 yyerrok;
 	}
@@ -2107,7 +2111,7 @@ time_of_day:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME_OF_DAY' and daytime in time of day."); yynerrs++;}
 | TIME_OF_DAY '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for time of day.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for time of day.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for time of day."); yyclearin;}
 	 yyerrok;
 	}
@@ -2133,7 +2137,7 @@ daytime:
   {$$ = NULL; print_err_msg(locl(@3), locf(@4), "':' missing between minutes and seconds in daytime."); yynerrs++;}
 | day_hour ':' day_minute ':' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@4), locf(@5), "no value defined for seconds in daytime.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for seconds in daytime.");}
 	 else {print_err_msg(locf(@5), locl(@5), "invalid value for seconds in daytime."); yyclearin;}
 	 yyerrok;
 	}
@@ -2158,13 +2162,13 @@ date:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'DATE' and date literal in date."); yynerrs++;}
 | DATE '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for date.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for date.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for date."); yyclearin;}
 	 yyerrok;
 	}
 | D_SHARP error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no value defined for date.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no value defined for date.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid value for date."); yyclearin;}
 	 yyerrok;
 	}
@@ -2188,7 +2192,7 @@ date_literal:
   {$$ = NULL; print_err_msg(locl(@3), locf(@4), "'-' missing between month and day in date literal."); yynerrs++;}
 | year '-' month '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@4), locf(@5), "no value defined for day in date literal.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for day in date literal.");}
 	 else {print_err_msg(locf(@5), locl(@5), "invalid value for day in date literal."); yyclearin;}
 	 yyerrok;
 	}
@@ -2217,7 +2221,7 @@ date_and_time:
 	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "'-' missing between date literal and daytime in date and time."); yynerrs++;}
 | DATE_AND_TIME '#' date_literal '-' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@4), locf(@5), "no value defined for daytime in date and time.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for daytime in date and time.");}
 	 else {print_err_msg(locf(@5), locl(@5), "invalid value for daytime in date and time."); yyclearin;}
 	 yyerrok;
 	}
@@ -2497,7 +2501,7 @@ simple_type_declaration:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in simple type declaration."); yynerrs++;}
 | identifier ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in data type declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in data type declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in data type declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -2527,13 +2531,13 @@ simple_spec_init:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in specification with initialization."); yynerrs++;}
 | elementary_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 | prev_declared_simple_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -2591,7 +2595,7 @@ subrange_spec_init:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in subrange specification with initialization."); yynerrs++;}
 | subrange_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in subrange specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in subrange specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in subrange specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -2644,7 +2648,7 @@ subrange_with_var:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
 | signed_integer DOTDOT error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
 	 yyerrok;
 	}
@@ -2660,7 +2664,7 @@ subrange:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
 | signed_integer DOTDOT error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
 	 yyerrok;
 	}
@@ -2723,7 +2727,7 @@ enumerated_spec_init:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in enumerated specification with initialization."); yynerrs++;}
 | enumerated_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value in enumerated specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -2755,7 +2759,7 @@ enumerated_value_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in enumerated value list.");}
 | enumerated_value_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated value list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated value list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value in enumerated value list."); yyclearin;}
 	 yyerrok;
 	}
@@ -2773,7 +2777,7 @@ enumerated_value:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between enumerated type name and value in enumerated literal."); yynerrs++;}
 | prev_declared_enumerated_type_name '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for enumerated literal.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for enumerated literal.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for enumerated literal."); yyclearin;}
 	 yyerrok;
 	}
@@ -2818,7 +2822,7 @@ array_spec_init:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in array specification with initialization."); yynerrs++;}
 | array_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in array specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in array specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in array specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -2864,7 +2868,7 @@ array_specification:
 	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "'OF' missing between subrange list and item type name in array specification."); yynerrs++;}
 | ARRAY '[' array_subrange_list ']' OF error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no item data type defined in array specification.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no item data type defined in array specification.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid item data type in array specification."); yyclearin;}
 	 yyerrok;
 	}
@@ -2883,7 +2887,7 @@ array_subrange_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in subrange list."); yynerrs++;}
 | array_subrange_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid subrange in subrange list."); yyclearin;}
 	 yyerrok;
 	}
@@ -2918,7 +2922,7 @@ array_initial_elements_list:
 /*
 | array_initial_elements_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no array initial value in array initial values list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no array initial value in array initial values list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid array initial value in array initial values list."); yyclearin;}
 	 yyerrok;
 	}
@@ -2987,7 +2991,7 @@ initialized_structure:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in structure specification with initialization."); yynerrs++;}
 | prev_declared_structure_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined in structure specification with initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in structure specification with initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value in structure specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -3062,7 +3066,7 @@ structure_element_declaration:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and structure specification."); yynerrs++;}
 | structure_element_name ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in structure element declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in structure element declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in structure element declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -3099,7 +3103,7 @@ structure_element_initialization_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in structure element initialization list in structure initialization."); yynerrs++;}
 | structure_element_initialization_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no structure element initialization defined in structure initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no structure element initialization defined in structure initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid structure element initialization in structure initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -3128,7 +3132,7 @@ structure_element_initialization:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in structured structure element initialization."); yynerrs++;}
 | structure_element_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in structured structure element initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in structured structure element initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in structured structure element initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -3639,7 +3643,7 @@ en_param_declaration:
 	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "'BOOL' missing in EN declaration."); yynerrs++;}
 | en_identifier ':' BOOL ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in EN declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in EN declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in EN declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -3675,7 +3679,7 @@ var1_init_decl:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and enumerated specification."); yynerrs++;}
 | var1_list ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -3730,7 +3734,7 @@ var1_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in variable list."); yynerrs++;}
 | var1_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no variable name defined in variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable name defined in variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid variable name in variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -3778,7 +3782,7 @@ fb_name_decl:
 	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':=' missing in function block declaration with initialization."); yynerrs++;}
 | fb_name_list_with_colon function_block_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@3), locf(@4), "no initialization defined in function block declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no initialization defined in function block declaration.");}
 	 else {print_err_msg(locf(@4), locl(@4), "invalid initialization in function block declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -3919,7 +3923,7 @@ eno_param_declaration:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in ENO declaration."); yynerrs++;}
 | eno_identifier ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in ENO declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in ENO declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in ENO declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4129,13 +4133,13 @@ located_var_decl:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between located variable location and specification."); yynerrs++;}
 | variable_name location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 | location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4247,7 +4251,7 @@ external_declaration:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and function block type specification."); yynerrs++;}
 | global_var_name ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in external variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in external variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in external variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4333,7 +4337,7 @@ global_var_decl:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between global variable specification and function block type specification."); yynerrs++;}
 | global_var_spec ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in global variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in global variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in global variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4372,7 +4376,7 @@ location:
 /* ERROR_CHECK_BEGIN */
 | AT error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no location defined in location declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no location defined in location declaration.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid location in global location declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4395,7 +4399,7 @@ global_var_list:
 	{$$ = new global_var_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "',' missing in global variable list."); yynerrs++;}
 | global_var_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no variable name defined in global variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable name defined in global variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid variable name in global variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4477,7 +4481,7 @@ single_byte_string_spec:
 	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "':=' missing before limited string type initialization."); yynerrs++;}
 | STRING '[' integer ']' ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@5), locf(@6), "no initial value defined in limited string type initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@5), locf(@6), "no initial value defined in limited string type initialization.");}
 	 else {print_err_msg(locf(@6), locl(@6), "invalid initial value in limited string type initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -4522,7 +4526,7 @@ double_byte_string_spec:
 	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "':=' missing before limited double byte string type initialization."); yynerrs++;}
 | WSTRING '[' integer ']' ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@5), locf(@6), "no initial value defined double byte in limited string type initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@5), locf(@6), "no initial value defined double byte in limited string type initialization.");}
 	 else {print_err_msg(locf(@6), locl(@6), "invalid initial value in limited double byte string type initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -4582,7 +4586,7 @@ incompl_located_var_decl:
 	}
 | variable_name incompl_location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no specification defined in incomplete located variable declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in incomplete located variable declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in incomplete located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -4751,7 +4755,7 @@ standard_function_name_simpleop_clashes:
 /* standard_function_name_NOT_clashes is only used in function invocations, so we use the poutype_identifier_c class! */
 standard_function_name_NOT_clashes:
   NOT
-	{$$ = new poutype_identifier_c(strdup("NOT"), locloc(@$));}
+	{$$ = new poutype_identifier_c(creat_strcopy("NOT"), locloc(@$));}
 ;
 
 /* Add here any other IL simple operators that collide
@@ -4768,20 +4772,20 @@ standard_function_name_simpleop_only_clashes:
 
 /* standard_function_name_expression_clashes is only used in function invocations, so we use the poutype_identifier_c class! */
 standard_function_name_expression_clashes:
-  AND	{$$ = new poutype_identifier_c(strdup("AND"), locloc(@$));}
-| OR	{$$ = new poutype_identifier_c(strdup("OR"), locloc(@$));}
-| XOR	{$$ = new poutype_identifier_c(strdup("XOR"), locloc(@$));}
-| ADD	{$$ = new poutype_identifier_c(strdup("ADD"), locloc(@$));}
-| SUB	{$$ = new poutype_identifier_c(strdup("SUB"), locloc(@$));}
-| MUL	{$$ = new poutype_identifier_c(strdup("MUL"), locloc(@$));}
-| DIV	{$$ = new poutype_identifier_c(strdup("DIV"), locloc(@$));}
-| MOD	{$$ = new poutype_identifier_c(strdup("MOD"), locloc(@$));}
-| GT	{$$ = new poutype_identifier_c(strdup("GT"), locloc(@$));}
-| GE	{$$ = new poutype_identifier_c(strdup("GE"), locloc(@$));}
-| EQ	{$$ = new poutype_identifier_c(strdup("EQ"), locloc(@$));}
-| LT	{$$ = new poutype_identifier_c(strdup("LT"), locloc(@$));}
-| LE	{$$ = new poutype_identifier_c(strdup("LE"), locloc(@$));}
-| NE	{$$ = new poutype_identifier_c(strdup("NE"), locloc(@$));}
+  AND	{$$ = new poutype_identifier_c(creat_strcopy("AND"), locloc(@$));}
+| OR	{$$ = new poutype_identifier_c(creat_strcopy("OR"), locloc(@$));}
+| XOR	{$$ = new poutype_identifier_c(creat_strcopy("XOR"), locloc(@$));}
+| ADD	{$$ = new poutype_identifier_c(creat_strcopy("ADD"), locloc(@$));}
+| SUB	{$$ = new poutype_identifier_c(creat_strcopy("SUB"), locloc(@$));}
+| MUL	{$$ = new poutype_identifier_c(creat_strcopy("MUL"), locloc(@$));}
+| DIV	{$$ = new poutype_identifier_c(creat_strcopy("DIV"), locloc(@$));}
+| MOD	{$$ = new poutype_identifier_c(creat_strcopy("MOD"), locloc(@$));}
+| GT	{$$ = new poutype_identifier_c(creat_strcopy("GT"), locloc(@$));}
+| GE	{$$ = new poutype_identifier_c(creat_strcopy("GE"), locloc(@$));}
+| EQ	{$$ = new poutype_identifier_c(creat_strcopy("EQ"), locloc(@$));}
+| LT	{$$ = new poutype_identifier_c(creat_strcopy("LT"), locloc(@$));}
+| LE	{$$ = new poutype_identifier_c(creat_strcopy("LE"), locloc(@$));}
+| NE	{$$ = new poutype_identifier_c(creat_strcopy("NE"), locloc(@$));}
 /*
   AND_operator	{$$ = il_operator_c_2_poutype_identifier_c($1);}
 //NOTE: AND2 (corresponding to the source code string '&') does not clash
@@ -4943,7 +4947,7 @@ function_name_declaration:
 /* ERROR_CHECK_BEGIN */
 | FUNCTION error 
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no function name defined in function declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no function name defined in function declaration.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid function name in function declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -5457,7 +5461,7 @@ indicator_name_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing at end of action association declaration."); yynerrs++;}
 | indicator_name_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no indicator defined in indicator list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no indicator defined in indicator list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid indicator in indicator list."); yyclearin;}
 	 yyerrok;
 	}
@@ -5479,7 +5483,7 @@ action_qualifier:
 	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "',' missing between timed qualifier and action time in action qualifier."); yynerrs++;}
 | timed_qualifier ',' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no action time defined in action qualifier.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no action time defined in action qualifier.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid action time in action qualifier."); yyclearin;}
 	 yyerrok;
 	}
@@ -5487,20 +5491,20 @@ action_qualifier:
 ;
 
 qualifier:
-  N		{$$ = new qualifier_c(strdup("N"), locloc(@$));}
-| R		{$$ = new qualifier_c(strdup("R"), locloc(@$));}
-| S		{$$ = new qualifier_c(strdup("S"), locloc(@$));}
-| P		{$$ = new qualifier_c(strdup("P"), locloc(@$));}
-| P0	{$$ = new qualifier_c(strdup("P0"), locloc(@$));}
-| P1	{$$ = new qualifier_c(strdup("P1"), locloc(@$));}
+  N		{$$ = new qualifier_c(creat_strcopy("N"), locloc(@$));}
+| R		{$$ = new qualifier_c(creat_strcopy("R"), locloc(@$));}
+| S		{$$ = new qualifier_c(creat_strcopy("S"), locloc(@$));}
+| P		{$$ = new qualifier_c(creat_strcopy("P"), locloc(@$));}
+| P0	{$$ = new qualifier_c(creat_strcopy("P0"), locloc(@$));}
+| P1	{$$ = new qualifier_c(creat_strcopy("P1"), locloc(@$));}
 ;
 
 timed_qualifier:
-  L		{$$ = new timed_qualifier_c(strdup("L"), locloc(@$));}
-| D		{$$ = new timed_qualifier_c(strdup("D"), locloc(@$));}
-| SD		{$$ = new timed_qualifier_c(strdup("SD"), locloc(@$));}
-| DS		{$$ = new timed_qualifier_c(strdup("DS"), locloc(@$));}
-| SL		{$$ = new timed_qualifier_c(strdup("SL"), locloc(@$));}
+  L		{$$ = new timed_qualifier_c(creat_strcopy("L"), locloc(@$));}
+| D		{$$ = new timed_qualifier_c(creat_strcopy("D"), locloc(@$));}
+| SD		{$$ = new timed_qualifier_c(creat_strcopy("SD"), locloc(@$));}
+| DS		{$$ = new timed_qualifier_c(creat_strcopy("DS"), locloc(@$));}
+| SL		{$$ = new timed_qualifier_c(creat_strcopy("SL"), locloc(@$));}
 ;
 
 /* NOTE: A step_name may be used as a structured vaqriable, in order to access the status bit (e.g. Step1.X) 
@@ -5586,7 +5590,7 @@ step_name_list:
 	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in step list."); yynerrs++;}
 | step_name_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no step name defined in step list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no step name defined in step list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid step name in step list."); yyclearin;}
 	 yyerrok;
 	}
@@ -5675,7 +5679,7 @@ transition_condition:
 	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':' missing before IL condition in transition declaration."); yynerrs++;}
 | start_IL_body_token ':' eol_list error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@3), locf(@4), "no instructions defined in IL condition of transition declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no instructions defined in IL condition of transition declaration.");}
 	 else {print_err_msg(locf(@4), locl(@4), "invalid instructions in IL condition of transition declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -5714,7 +5718,7 @@ action_body:
 /* ERROR_CHECK_BEGIN */
 | ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no body defined in action declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no body defined in action declaration.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid body defined in action declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -6168,7 +6172,7 @@ task_configuration:
   {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid task name defined in task declaration."); yyerrok;}
 | TASK task_name error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no task initialization defined in task declaration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no task initialization defined in task declaration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid task initialization in task declaration."); yyclearin;}
 	 yyerrok;
 	}
@@ -6236,7 +6240,7 @@ task_initialization_priority:
   {$$ = NULL; print_err_msg(locl(@1), locf(@3), "':=' missing after 'PRIORITY' in task initialization."); yynerrs++;}
 | PRIORITY ASSIGN {cmd_pop_state();} error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@4), "no priority number defined in 'PRIORITY' statement of task initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@4), "no priority number defined in 'PRIORITY' statement of task initialization.");}
 	 else {print_err_msg(locf(@4), locl(@4), "invalid priority number in 'PRIORITY' statement of task initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -6315,7 +6319,7 @@ optional_task_name:
 /* ERROR_CHECK_BEGIN */
 | WITH error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no task name defined in optional task name of program configuration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no task name defined in optional task name of program configuration.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid task name in optional task name of program configuration."); yyclearin;}
 	 yyerrok;
 	}
@@ -6347,7 +6351,7 @@ prog_conf_elements:
   {$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in program configuration elements list."); yynerrs++;}
 | prog_conf_elements ',' error
   {$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value defined for program configuration element in program configuration list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for program configuration element in program configuration list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value for program configuration element in program configuration list."); yyclearin;}
 	 yyerrok;
 	}
@@ -6372,7 +6376,7 @@ fb_task:
 /* ERROR_CHECK_BEGIN */
 | any_identifier WITH error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no task name defined in function block configuration.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no task name defined in function block configuration.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid task name in function block configuration."); yyclearin;}
 	 yyerrok;
 	}
@@ -6424,13 +6428,13 @@ prog_cnxn:
   {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' or '=>' missing between parameter and variable in program configuration element."); yynerrs++;}
 | any_symbolic_variable ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no value or variable defined in program configuration assignment element.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value or variable defined in program configuration assignment element.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid value or variable in program configuration assignment element."); yyclearin;}
 	 yyerrok;
 	}
 | any_symbolic_variable SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no variable defined in program configuration sendto element.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable defined in program configuration sendto element.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid variable in program configuration sendto element."); yyclearin;}
 	 yyerrok;
 	}
@@ -6516,7 +6520,7 @@ fb_initialization:
   {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing between function block name and initialization in function block initialization."); yynerrs++;}
 | function_block_type_name ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no initial value defined in function block initialization.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in function block initialization.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in function block initialization."); yyclearin;}
 	 yyerrok;
 	}
@@ -6761,7 +6765,7 @@ il_fb_call:
 /* ERROR_CHECK_BEGIN */
 | il_call_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid function block name in IL function block call."); yyclearin;}
 	 yyerrok;
 	}
@@ -6904,7 +6908,7 @@ il_operand_list2:
   {$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in IL operand list."); yynerrs++;}
 | il_operand ',' error
   {$$ = new il_operand_list_c(locloc(@$));
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no operand defined in IL operand list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no operand defined in IL operand list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid operand name in IL operand list."); yyclearin;}
 	 yyerrok;
 	}
@@ -7018,7 +7022,7 @@ il_param_assignment:
   {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid operator in parameter assignment."); yyerrok;}
 | il_assign_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no operand defined in parameter assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no operand defined in parameter assignment.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid operand in parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
@@ -7038,7 +7042,7 @@ il_param_out_assignment:
 /* ERROR_CHECK_BEGIN */
 | il_assign_out_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no variable defined in IL operand list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no variable defined in IL operand list.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid variable in IL operand list."); yyclearin;}
 	 yyerrok;
 	}
@@ -7322,7 +7326,7 @@ expression:
 /* ERROR_CHECK_BEGIN */
 | expression OR error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'OR' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'OR' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'OR' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7352,7 +7356,7 @@ xor_expression:
 /* ERROR_CHECK_BEGIN */
 | xor_expression XOR error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'XOR' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'XOR' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'XOR' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7377,19 +7381,19 @@ and_expression:
 /* ERROR_CHECK_BEGIN */
 | and_expression '&' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | and_expression AND error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'AND' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'AND' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'AND' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | and_expression AND2 error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7405,13 +7409,13 @@ comparison:
 /* ERROR_CHECK_BEGIN */
 | comparison '=' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '=' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '=' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | comparison OPER_NE error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<>' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<>' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<>' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7431,25 +7435,25 @@ equ_expression:
 /* ERROR_CHECK_BEGIN */
 | equ_expression '<' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression '>' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '>' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression OPER_LE error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<=' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<=' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression OPER_GE error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>=' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>=' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '>=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7469,13 +7473,13 @@ add_expression:
 /* ERROR_CHECK_BEGIN */
 | add_expression '+' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '+' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '+' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '+' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | add_expression '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '-' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '-' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '-' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7497,19 +7501,19 @@ term:
 /* ERROR_CHECK_BEGIN */
 | term '*' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '*' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '*' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '*' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | term '/' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '/' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '/' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '/' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | term MOD error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'MOD' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'MOD' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'MOD' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7527,7 +7531,7 @@ power_expression:
 /* ERROR_CHECK_BEGIN */
 | power_expression OPER_EXP error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after '**' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '**' in ST expression.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '**' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7544,13 +7548,13 @@ unary_expression:
 /* ERROR_CHECK_BEGIN */
 | '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no expression defined after '-' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no expression defined after '-' in ST expression.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid expression after '-' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | NOT error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@1), locf(@2), "no expression defined after 'NOT' in ST expression.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no expression defined after 'NOT' in ST expression.");}
 	 else {print_err_msg(locf(@2), locl(@2), "invalid expression after 'NOT' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
@@ -7748,7 +7752,7 @@ assignment_statement:
   {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid variable before ':=' in ST assignment statement."); yyerrok;}
 | variable ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined after ':=' in ST assignment statement.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after ':=' in ST assignment statement.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after ':=' in ST assignment statement."); yyclearin;}
 	 yyerrok;
 	}
@@ -7808,7 +7812,7 @@ param_assignment_formal_list:
 /* ERROR_CHECK_BEGIN */
 | param_assignment_formal_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
@@ -7827,7 +7831,7 @@ param_assignment_nonformal_list:
 /* ERROR_CHECK_BEGIN */
 | param_assignment_nonformal_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
@@ -7909,26 +7913,26 @@ param_assignment_formal:
 /* ERROR_CHECK_BEGIN */
 | any_identifier ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
 | en_identifier ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
 | sendto_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
 	 yyerrok;
 	}
 /*
 | eno_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
 	 yyerrok;
 	}
@@ -7939,14 +7943,14 @@ param_assignment_formal:
   {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid parameter name defined in ST formal parameter out negated assignment."); yyerrok;}
 | NOT sendto_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
 	 else {print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
 	 yyerrok;
 	}
 /*
 | NOT eno_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
 	 else {print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
 	 yyerrok;
 	}
@@ -8100,7 +8104,7 @@ case_list:
 /* ERROR_CHECK_BEGIN */
 | case_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token()) {print_err_msg(locl(@2), locf(@3), "no case defined in case list of ST parameter assignment list.");}
+	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no case defined in case list of ST parameter assignment list.");}
 	 else {print_err_msg(locf(@3), locl(@3), "invalid case in case list of ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
@@ -8341,8 +8345,8 @@ void yyerror (const char *error_msg) {
 
 
 /* ERROR_CHECK_BEGIN */
-bool is_current_syntax_token() {
-  switch (yychar) {
+bool is_current_syntax_token(int token) {
+  switch (token) {
     case ';':
     case ',':
     case ')':
@@ -8432,7 +8436,7 @@ identifier_c *token_2_identifier_c(char *value, ) {
  */
 poutype_identifier_c *il_operator_c_2_poutype_identifier_c(symbol_c *il_operator) {
   identifier_c         *    id = il_operator_c_2_identifier_c(il_operator);
-  poutype_identifier_c *pou_id = new poutype_identifier_c(strdup(id->value));
+  poutype_identifier_c *pou_id = new poutype_identifier_c(creat_strcopy(id->value));
 
   *(symbol_c *)pou_id = *(symbol_c *)id;
   delete id;
@@ -8506,7 +8510,7 @@ identifier_c *il_operator_c_2_identifier_c(symbol_c *il_operator) {
 
   if (name == NULL)
     ERROR;
-  res = new identifier_c(strdup(name));
+  res = new identifier_c(creat_strcopy(name));
   *(symbol_c *)res = *(symbol_c *)il_operator;
   delete il_operator;
   
