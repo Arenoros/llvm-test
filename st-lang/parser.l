@@ -47,19 +47,19 @@
    #include "flex_priv.h"
 
 #define YY_USER_ACTION {\
-        previous_tracking   =*current_tracking;					\
-        yylloc->first_line   = current_tracking->lineNumber;			\
-        yylloc->first_column = current_tracking->currentChar;			\
-        yylloc->first_order  = current_order;					\
+        parser->backup_tracking();					\
+        yylloc->first_line   = parser->lineNumber();			\
+        yylloc->first_column = parser->currentChar();			\
+        yylloc->first_order  = parser->current_order;					\
         \
-        UpdateTracking(yytext);							\
+        parser->UpdateTracking(yytext);							\
         \
-        yylloc->last_line    = current_tracking->lineNumber;			\
-        yylloc->last_column  = current_tracking->currentChar - 1;		\
-        yylloc->last_order   = current_order;					\
+        yylloc->last_line    = parser->lineNumber();			\
+        yylloc->last_column  = parser->currentChar() - 1;		\
+        yylloc->last_order   = parser->current_order;					\
         \
-        current_tracking->currentTokenStart = current_tracking->currentChar;	\
-        current_order++;							\
+        parser->update_cur_tocken();	\
+        parser->current_order++;							\
 	}
 
 int get_identifier_token(const char *identifier_str);
@@ -71,15 +71,15 @@ char* craet_strcopy(const char* str);
 /***************************************************/
 
 %{
-void UpdateTracking(const char *text);
+
 /* return the character back to the input stream. */
 void unput_char(const char c, yyscan_t scanner);
 /* return all the text in the current token back to the input stream. */
-void unput_text(int n, yyscan_t scanner);
+void unput_text(int n, yyscan_t scanner, parser_t* parser);
 /* return all the text in the current token back to the input stream, 
  * but first return to the stream an additional character to mark the end of the token. 
  */
-void unput_and_mark(const char mark_char, yyscan_t scanner);
+void unput_and_mark(const char mark_char, yyscan_t scanner, parser_t* parser);
 
 void include_file(const char *include_filename);
 
@@ -89,11 +89,10 @@ void include_file(const char *include_filename);
  * once we have decided if we are parsing ST or IL code. The following functions manage that buffer used by
  * the body_state.
  */
-void  append_bodystate_buffer(const char *text, int is_whitespace = 0);
-void   unput_bodystate_buffer(yyscan_t scanner);
-int  isempty_bodystate_buffer(void);
+void append_bodystate_buffer(const char *text, parser_t* parser, int is_whitespace = 0);
+void unput_bodystate_buffer(yyscan_t scanner, parser_t* parser);
+int isempty_bodystate_buffer(parser_t* parser);
 
-int GetNextChar(char *b, int maxBuffer);
 %}
 
 /* Bison is in the pre-parsing stage, and we are parsing a POU. Ignore everything up to the end of the POU! */
@@ -168,49 +167,6 @@ file_include_pragma			{file_include_pragma_beg}{file_include_pragma_filename}{fi
 
 %{
 
-/* A counter to track the order by which each token is processed.
- * NOTE: This counter is not exactly linear (i.e., it does not get incremented by 1 for each token).
- *       i.e.. it may get incremented by more than one between two consecutive tokens.
- *       This is due to the fact that the counter gets incremented every 'user action' in flex,
- *       however not every user action will result in a token being passed to bison.
- *       Nevertheless this is still OK, as we are only interested in the relative
- *       ordering of tokens...
- */
-static long int current_order = 0;
-  
-typedef struct {
-    int eof;
-    int lineNumber;
-    int currentChar;
-    int lineLength;
-    int currentTokenStart;
-    FILE *in_file;
-  } tracking_t;
-
-/* A forward declaration of a function defined at the end of this file. */
-void FreeTracking(tracking_t *tracking);
-
-
-#define MAX_INCLUDE_DEPTH 16
-
-typedef struct {
-	  YY_BUFFER_STATE buffer_state;
-	  tracking_t *env;
-	  const char *filename;
-	} include_stack_t;
-
-tracking_t * current_tracking = NULL;
-tracking_t  previous_tracking;
-include_stack_t include_stack[MAX_INCLUDE_DEPTH];
-int include_stack_ptr = 0;
-
-const char *INCLUDE_DIRECTORIES[] = {
-	".",
-	"/lib",
-	"/usr/lib",
-	"/usr/lib/iec",
-	NULL /* must end with NULL!! */
-	};
 %}
 /*
 TOK     [a-zA-Z0-9_]+
@@ -594,6 +550,7 @@ incompl_location	%[IQM]\*
 	/***********************************************************/
 	/* Handle requests sent by bison for flex to change state. */
 	/***********************************************************/
+	
 	if (get_goto_body_state()) {
 	  yy_push_state(body_state, yyscanner);
 	  rst_goto_body_state();
@@ -624,7 +581,7 @@ incompl_location	%[IQM]\*
 	/***************************/
 
 	/* We start off by searching for the pragmas we handle in the lexical parser. */
-<INITIAL>{file_include_pragma}	unput_text(0, yyscanner); yy_push_state(include_beg, yyscanner);
+<INITIAL>{file_include_pragma}	unput_text(0, yyscanner, parser); yy_push_state(include_beg, yyscanner);
 
 	/* Pragmas sent to syntax analyser (bison) */
 	/* NOTE: In the vardecl_list_state we only process the pragmas between two consecutive VAR .. END_VAR blocks.
@@ -638,11 +595,11 @@ incompl_location	%[IQM]\*
 {enable_code_generation_pragma}					return enable_code_generation_pragma_token;
 <vardecl_list_state>{disable_code_generation_pragma}/(VAR)	return disable_code_generation_pragma_token; 
 <vardecl_list_state>{enable_code_generation_pragma}/(VAR)	return enable_code_generation_pragma_token;  
-<body_state>{disable_code_generation_pragma}			append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
-<body_state>{enable_code_generation_pragma}			append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{disable_code_generation_pragma}			append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{enable_code_generation_pragma}			append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
 	/* Any other pragma we find, we just pass it up to the syntax parser...   */
 	/* Note that the <body_state> state is exclusive, so we have to include it here too. */
-<body_state>{pragma}					append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{pragma}					append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
 {pragma}	{/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
 		 yytext[strlen(yytext)-cut] = '\0';
@@ -690,44 +647,22 @@ incompl_location	%[IQM]\*
 			       *       As a corollory, flex can never safely close the main input file, and we must ask
 			       *       bison to close it!
 			       */
-			  if (include_stack_ptr == 0) {
-			      // fclose(yyin);           // Must not do this!!
-			      // FreeTracking(current_tracking); // Must not do this!!
-			      /* yyterminate() terminates the scanner and returns a 0 to the 
-			       * scanner's  caller, indicating "all done".
-			       *	
-			       * Our syntax parser (written with bison) has the token	
-			       * END_OF_INPUT associated to the value 0, so even though
-			       * we don't explicitly return the token END_OF_INPUT
-			       * calling yyterminate() is equivalent to doing that. 
-			       */ 	
+			  if (parser->include_stack.size() == 0) {
 			    yyterminate();
 			  } else {
-			    fclose(yyin);
-			    FreeTracking(current_tracking);
-			    --include_stack_ptr;
-			    yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
-			    yy_switch_to_buffer((include_stack[include_stack_ptr]).buffer_state, yyscanner);
-			    current_tracking = include_stack[include_stack_ptr].env;
-			      /* removing constness of char *. This is safe actually,
-			       * since the only real const char * that is stored on the stack is
-			       * the first one (i.e. the one that gets stored in include_stack[0],
-			       * which is never free'd!
-			       */
-			    /* NOTE: We do __NOT__ free the malloc()'d memory since 
-			     *       pointers to this filename will be kept by many objects
-			     *       in the abstract syntax tree.
-			     *       This will later be used to provide correct error
-			     *       messages during semantic analysis (stage 3)
-			     */
-			    /* free((char *)current_filename); */
-			    yy_push_state(include_end, yyscanner);
+			    //fclose(yyin);
+			    //FreeTracking(current_tracking);
+			    //--include_stack_ptr;
+			    //yy_delete_buffer(YY_CURRENT_BUFFER, yyscanner);
+			    //yy_switch_to_buffer((include_stack[include_stack_ptr]).buffer_state, yyscanner);
+			    //current_tracking = include_stack[include_stack_ptr].env;
+			    //yy_push_state(include_end, yyscanner);
 			  }
 			}
 
 <include_end>{file_include_pragma_end}	yy_pop_state(yyscanner);
 	/* handle the artificial file includes created by include_string(), which do not end with a '}' */
-<include_end>.				unput_text(0, yyscanner); yy_pop_state(yyscanner); 
+<include_end>.				unput_text(0, yyscanner, parser); yy_pop_state(yyscanner); 
 
 
 	/*********************************/
@@ -744,14 +679,14 @@ CONFIGURATION{st_whitespace}		if (get_preparse_state()) BEGIN(get_pou_name_state
 
 <get_pou_name_state>{
 {identifier}			BEGIN(ignore_pou_state); yylval->ID=creat_strcopy(yytext); return identifier_token;
-.				BEGIN(ignore_pou_state); unput_text(0, yyscanner);
+.				BEGIN(ignore_pou_state); unput_text(0, yyscanner, parser);
 }
 
 <ignore_pou_state>{
-END_FUNCTION			unput_text(0, yyscanner); BEGIN(INITIAL);
-END_FUNCTION_BLOCK		unput_text(0, yyscanner); BEGIN(INITIAL);
-END_PROGRAM			unput_text(0, yyscanner); BEGIN(INITIAL);
-END_CONFIGURATION		unput_text(0, yyscanner); BEGIN(INITIAL);
+END_FUNCTION			unput_text(0, yyscanner, parser); BEGIN(INITIAL);
+END_FUNCTION_BLOCK		unput_text(0, yyscanner, parser); BEGIN(INITIAL);
+END_PROGRAM			unput_text(0, yyscanner, parser); BEGIN(INITIAL);
+END_CONFIGURATION		unput_text(0, yyscanner, parser); BEGIN(INITIAL);
 .|\n				{}/* Ignore text inside POU! (including the '\n' character!)) */
 }
 
@@ -794,11 +729,11 @@ VAR_EXTERNAL			|
 VAR_GLOBAL			|
 VAR_TEMP			|
 VAR_CONFIG			|
-VAR_ACCESS			unput_text(0, yyscanner); BEGIN(vardecl_list_state);
+VAR_ACCESS			unput_text(0, yyscanner, parser); BEGIN(vardecl_list_state);
 
 END_FUNCTION			| /* execute the next rule's action, i.e. fall-through! */
 END_FUNCTION_BLOCK		| 
-END_PROGRAM			unput_text(0, yyscanner); BEGIN(vardecl_list_state); 
+END_PROGRAM			unput_text(0, yyscanner, parser); BEGIN(vardecl_list_state); 
 				/* Notice that we do NOT go directly to body_state, as that requires a push().
 				 * If we were to puch to body_state here, then the corresponding pop() at the
 				 *end of body_state would return to header_state.
@@ -818,11 +753,11 @@ VAR_GLOBAL			|
 VAR_TEMP			|
 VAR_CONFIG			|
 VAR_ACCESS			|
-VAR				unput_text(0, yyscanner); yy_push_state(vardecl_state, yyscanner);
+VAR				unput_text(0, yyscanner, parser); yy_push_state(vardecl_state, yyscanner);
 
-END_FUNCTION			unput_text(0, yyscanner); BEGIN(INITIAL);
-END_FUNCTION_BLOCK		unput_text(0, yyscanner); BEGIN(INITIAL);
-END_PROGRAM			unput_text(0, yyscanner); BEGIN(INITIAL);
+END_FUNCTION			unput_text(0, yyscanner, parser); BEGIN(INITIAL);
+END_FUNCTION_BLOCK		unput_text(0, yyscanner, parser); BEGIN(INITIAL);
+END_PROGRAM			unput_text(0, yyscanner, parser); BEGIN(INITIAL);
 
 				/* NOTE: Handling of whitespace...
 				 *   - Must come __before__ the next rule for any single character '.'
@@ -832,7 +767,7 @@ END_PROGRAM			unput_text(0, yyscanner); BEGIN(INITIAL);
 {st_whitespace}			/* Eat any whitespace */ 
 
 				/* anything else, just change to body_state! */
-.				unput_text(0, yyscanner); yy_push_state(body_state, yyscanner); //printf("\nChanging to body_state\n");
+.				unput_text(0, yyscanner, parser); yy_push_state(body_state, yyscanner); //printf("\nChanging to body_state\n");
 }
 
 
@@ -858,16 +793,16 @@ END_VAR				yy_pop_state(yyscanner); return END_VAR; /* pop back to vardecl_list_
 				  * However, it is possible to enter the body_state from other states (e.g. when 
 				  * parsing SFC code, that contains transitions or actions in other languages)
 				  */
-				 append_bodystate_buffer(yytext, 1 /* is whitespace */); 
+				 append_bodystate_buffer(yytext, parser, 1 /* is whitespace */); 
 				}
 	/* 'INITIAL_STEP' always used in beginning of SFCs !! */
-INITIAL_STEP			{ if (isempty_bodystate_buffer())	{unput_text(0, yyscanner); BEGIN(sfc_state);}
-				  else					{append_bodystate_buffer(yytext);}
+INITIAL_STEP			{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(sfc_state);}
+				  else					{append_bodystate_buffer(yytext, parser);}
 				}
  
 	/* ':=', at the very beginning of a 'body', occurs only in transitions and not Function, FB, or Program bodies! */
-:=				{ if (isempty_bodystate_buffer())	{unput_text(0, yyscanner); BEGIN(st_state);} /* We do _not_ return a start_ST_body_token here, as bison does not expect it! */
-				  else				 	{append_bodystate_buffer(yytext);}
+:=				{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(st_state);} /* We do _not_ return a start_ST_body_token here, as bison does not expect it! */
+				  else				 	{append_bodystate_buffer(yytext, parser);}
 				}
  
 	/* check if ';' occurs before an END_FUNCTION, END_FUNCTION_BLOCK, END_PROGRAM, END_ACTION or END_TRANSITION. (If true => we are parsing ST; If false => parsing IL). */
@@ -875,10 +810,10 @@ END_ACTION			| /* execute the next rule's action, i.e. fall-through! */
 END_FUNCTION			|
 END_FUNCTION_BLOCK		|
 END_TRANSITION   		|
-END_PROGRAM			{ append_bodystate_buffer(yytext); unput_bodystate_buffer(yyscanner); BEGIN(il_state); /*printf("returning start_IL_body_token\n");*/ return start_IL_body_token;}
-.|\n				{ append_bodystate_buffer(yytext);
+END_PROGRAM			{ append_bodystate_buffer(yytext, parser); unput_bodystate_buffer(yyscanner, parser); BEGIN(il_state); /*printf("returning start_IL_body_token\n");*/ return start_IL_body_token;}
+.|\n				{ append_bodystate_buffer(yytext, parser);
 				  if (strcmp(yytext, ";") == 0)
-				    {unput_bodystate_buffer(yyscanner); BEGIN(st_state); /*printf("returning start_ST_body_token\n");*/ return start_ST_body_token;}
+				    {unput_bodystate_buffer(yyscanner, parser); BEGIN(st_state); /*printf("returning start_ST_body_token\n");*/ return start_ST_body_token;}
 				}
 	/* The following rules are not really necessary. They just make compilation faster in case the ST Statement List starts with one fot he following... */
 RETURN				| /* execute the next rule's action, i.e. fall-through! */
@@ -887,8 +822,8 @@ CASE				|
 FOR				|
 WHILE				|
 EXIT				|
-REPEAT				{ if (isempty_bodystate_buffer())	{unput_text(0, yyscanner); BEGIN(st_state); return start_ST_body_token;}
-				  else				 	{append_bodystate_buffer(yytext);}
+REPEAT				{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(st_state); return start_ST_body_token;}
+				  else				 	{append_bodystate_buffer(yytext, parser);}
 				}
 
 }	/* end of body_state lexical parser */
@@ -896,18 +831,18 @@ REPEAT				{ if (isempty_bodystate_buffer())	{unput_text(0, yyscanner); BEGIN(st_
 
 	/* (il_state | st_state) -> pop to $previous_state (vardecl_list_state or sfc_state) */
 <il_state,st_state>{
-END_FUNCTION		yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_FUNCTION_BLOCK	yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_PROGRAM		yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_TRANSITION		yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_ACTION		yy_pop_state(yyscanner); unput_text(0, yyscanner);
+END_FUNCTION		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_FUNCTION_BLOCK	yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_PROGRAM		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_TRANSITION		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_ACTION		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
 }
 
 	/* sfc_state -> pop to $previous_state (vardecl_list_state or sfc_state) */
 <sfc_state>{
-END_FUNCTION		yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_FUNCTION_BLOCK	yy_pop_state(yyscanner); unput_text(0, yyscanner);
-END_PROGRAM		yy_pop_state(yyscanner); unput_text(0, yyscanner);
+END_FUNCTION		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_FUNCTION_BLOCK	yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
+END_PROGRAM		yy_pop_state(yyscanner); unput_text(0, yyscanner, parser);
 }
 
 	/* config -> INITIAL */
@@ -1494,7 +1429,7 @@ EXIT		return EXIT;		/* Keyword */
 	/* B 1.2.3.1 - Duration */
 	/************************/
 {fixed_point}		{yylval->ID=creat_strcopy(yytext); return fixed_point_token;}
-{interval}		{/*fprintf(stderr, "entering time_literal_state ##%s##\n", yytext);*/ unput_and_mark('#', yyscanner); yy_push_state(time_literal_state, yyscanner);}
+{interval}		{/*fprintf(stderr, "entering time_literal_state ##%s##\n", yytext);*/ unput_and_mark('#', yyscanner, parser); yy_push_state(time_literal_state, yyscanner);}
 {erroneous_interval}	{return erroneous_interval_token;}
 
 <time_literal_state>{
@@ -1566,66 +1501,9 @@ _			/* do nothing - eat it up!*/
 %%
 
 
-
-/*************************/
-/* Tracking Functions... */
-/*************************/
-
-#define MAX_LINE_LENGTH 1024
-
-tracking_t *GetNewTracking(FILE* in_file) {
-  tracking_t* new_env = new tracking_t;
-  new_env->eof         = 0;
-  new_env->lineNumber  = 1;
-  new_env->currentChar = 0;
-  new_env->lineLength  = 0;
-  new_env->currentTokenStart = 0;
-  new_env->in_file = in_file;
-  return new_env;
-}
-
-
-void FreeTracking(tracking_t *tracking) {
-  delete tracking;
-}
-
-
-void UpdateTracking(const char *text) {
-  const char *newline, *token = text;
-  while ((newline = strchr(token, '\n')) != NULL) {
-    token = newline + 1;
-    current_tracking->lineNumber++;
-    current_tracking->currentChar = 1;
-  }
-  current_tracking->currentChar += strlen(token);
-}
-
-
-/* GetNextChar: reads a character from input */
-int GetNextChar(char *b, int maxBuffer) {
-  int res = fgetc(current_tracking->in_file);
-  if ( res == EOF ) 
-    return 0;
-  *b = (char)res;
-  return 1;
-}
-
-
-
 /***********************************/
 /* Utility function definitions... */
 /***********************************/
-
-/* print the include file stack to stderr... */
-void print_include_stack(void) {
-  int i;
-
-  if ((include_stack_ptr - 1) >= 0)
-    fprintf (stderr, "in file "); 
-  for (i = include_stack_ptr - 1; i >= 0; i--)
-    fprintf (stderr, "included from file %s:%d\n", include_stack[i].filename, include_stack[i].env->lineNumber);
-}
-
 
 /* Open an include file, and set the internal state variables of lexical analyser to process a new include file */
 void include_file(const char *) {}
@@ -1639,7 +1517,7 @@ void unput_char(const char c, yyscan_t yyscanner) {
 
 
 /* return all the text in the current token back to the input stream, except the first n chars. */
-void unput_text(int n, yyscan_t scanner) {
+void unput_text(int n, yyscan_t scanner, parser_t* parser) {
   struct yyguts_t * yyg = (struct yyguts_t*)scanner;
   if (n < 0) ERROR;
   signed int i; // must be signed! The iterartion may end with -1 when this function is called with n=0 !!
@@ -1647,10 +1525,11 @@ void unput_text(int n, yyscan_t scanner) {
   char *yycopy = creat_strcopy(yytext); /* unput_char() destroys yytext, so we copy it first */
   for (int i = yyleng-1; i >= n; i--)
     unput_char(yycopy[i], scanner);
-
-  *current_tracking = previous_tracking;
+	
   yycopy[n] = '\0';
-  UpdateTracking(yycopy);
+  if(parser)
+    parser->restore_tracking();
+	parser->UpdateTracking(yycopy);
   
   free(yycopy);
 }
@@ -1660,7 +1539,7 @@ void unput_text(int n, yyscan_t scanner) {
 /* return all the text in the current token back to the input stream, 
  * but first return to the stream an additional character to mark the end of the token. 
  */
-void unput_and_mark(const char mark_char, yyscan_t scanner) {
+void unput_and_mark(const char mark_char, yyscan_t scanner, parser_t* parser) {
   struct yyguts_t * yyg = (struct yyguts_t*)scanner;
   char *yycopy = creat_strcopy( yytext ); /* unput_char() destroys yytext, so we copy it first */
   unput_char(mark_char, scanner);
@@ -1668,7 +1547,7 @@ void unput_and_mark(const char mark_char, yyscan_t scanner) {
     unput_char(yycopy[i], scanner);
 
   free(yycopy);
-  *current_tracking = previous_tracking;
+  parser->restore_tracking();
 }
 
 
@@ -1680,47 +1559,45 @@ void unput_and_mark(const char mark_char, yyscan_t scanner) {
  * the body_state.
  */
 /* The buffer used by the body_state state */
-char *bodystate_buffer        = NULL;
-bool  bodystate_is_whitespace = 1; // TRUE (1) if buffer is empty, or only contains whitespace.
-tracking_t bodystate_init_tracking;
+
 
 /* append text to bodystate_buffer */
-void  append_bodystate_buffer(const char *text, int is_whitespace) {
-  // printf("<<<append_bodystate_buffer>>> %d <%s><%s>\n", bodystate_buffer, text, (NULL != bodystate_buffer)?bodystate_buffer:"NULL");
+void append_bodystate_buffer(const char *text, parser_t* parser, int is_whitespace) {
+  // printf("<<<append_bodystate_buffer>>> %d <%s><%s>\n", parser->bodystate_buffer, text, (NULL != parser->bodystate_buffer)? parser->bodystate_buffer:"NULL");
   long int old_len = 0;
   // make backup of tracking if we are starting off a new body_state_buffer
-  if (NULL == bodystate_buffer) bodystate_init_tracking = *current_tracking;
+  if (NULL == parser->bodystate_buffer) parser->bodystate_init_tracking = *parser->current_tracking;
   // set bodystate_is_whitespace flag if we are starting a new buffer
-  if (NULL == bodystate_buffer) bodystate_is_whitespace = 1;
+  if (NULL == parser->bodystate_buffer) parser->bodystate_is_whitespace = 1;
   // set bodystate_is_whitespace flag to FALSE if we are adding non white space to buffer
-  if (!is_whitespace)           bodystate_is_whitespace = 0;
+  if (!is_whitespace)          parser->bodystate_is_whitespace = 0;
 
-  if (NULL != bodystate_buffer) old_len = strlen(bodystate_buffer);
-  bodystate_buffer = (char *)realloc(bodystate_buffer, old_len + strlen(text) + 1);
-  if (NULL == bodystate_buffer) ERROR;
-  strcpy(bodystate_buffer + old_len, text);
-  //printf("=<%s> %d %d\n", (NULL != bodystate_buffer)?bodystate_buffer:NULL, old_len + strlen(text) + 1, bodystate_buffer);
+  if (NULL != parser->bodystate_buffer) old_len = strlen(parser->bodystate_buffer);
+  parser->bodystate_buffer = (char *)realloc(parser->bodystate_buffer, old_len + strlen(text) + 1);
+  if (NULL == parser->bodystate_buffer) ERROR;
+  strcpy(parser->bodystate_buffer + old_len, text);
+  // printf("=<%s> %d %d\n", (NULL != parser->bodystate_buffer)? parser->bodystate_buffer: NULL, old_len + strlen(text) + 1, parser->bodystate_buffer);
 }
 
 /* Return all data in bodystate_buffer back to flex, and empty bodystate_buffer. */
-void unput_bodystate_buffer(yyscan_t scanner) {
-  if (NULL == bodystate_buffer) ERROR;
-  // printf("<<<unput_bodystate_buffer>>>\n%s\n", bodystate_buffer);
+void unput_bodystate_buffer(yyscan_t scanner, parser_t* parser) {
+  if (NULL == parser->bodystate_buffer) ERROR;
+  // printf("<<<unput_bodystate_buffer>>>\n%s\n", parser->bodystate_buffer);
   
-  for (long int i = strlen(bodystate_buffer)-1; i >= 0; i--)
-    unput_char(bodystate_buffer[i], scanner);
+  for (long int i = strlen(parser->bodystate_buffer)-1; i >= 0; i--)
+    unput_char(parser->bodystate_buffer[i], scanner);
   
-  free(bodystate_buffer);
-  bodystate_buffer        = NULL;
-  bodystate_is_whitespace = 1;  
-  *current_tracking = bodystate_init_tracking;
+  free(parser->bodystate_buffer);
+  parser->bodystate_buffer        = NULL;
+  parser->bodystate_is_whitespace = 1;
+  *parser->current_tracking = parser->bodystate_init_tracking;
 }
 
 
 /* Return true if bodystate_buffer is empty or ony contains whitespace!! */
-int  isempty_bodystate_buffer(void) {
-  if (NULL == bodystate_buffer) return 1;
-  if (bodystate_is_whitespace)  return 1;
+int isempty_bodystate_buffer(parser_t* parser) {
+  if (NULL == parser->bodystate_buffer) return 1;
+  if (parser->bodystate_is_whitespace) return 1;
   return 0;
 }
 
@@ -1734,20 +1611,3 @@ int  isempty_bodystate_buffer(void) {
 /* The following functions will be called from inside bison code! */
 
 void include_string(const char *source_code) {}
-
-
-/* Tell flex which file to parse. This function will not imediately start parsing the file.
- * To parse the file, you then need to call yyparse()
- *
- * Returns NULL on error opening the file (and a valid errno), or 0 on success.
- * Caller must close the file!
- */
-FILE *parse_file(const char *filename, yyscan_t scanner) {
-  FILE *filehandle = NULL;
-
-  if((filehandle = fopen(filename, "r")) != NULL) {
-	yyset_in(filehandle, scanner);
-    current_tracking = GetNewTracking(filehandle);
-  }
-  return filehandle;
-}

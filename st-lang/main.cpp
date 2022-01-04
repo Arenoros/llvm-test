@@ -36,9 +36,14 @@ int main() {
 
     /* Default values for the command line options... */
     runtime_options.relaxed_datatype_model = false; /* by default use the strict datatype equivalence model */
-    symbol_c* tree_root = nullptr;
-    int rv = yyparse(scanner, &tree_root);
+    parser_t parser;
+    yyset_extra(&parser, scanner);
+    parser_t* test = (parser_t*)yyget_extra(scanner);
+
+    int rv = yyparse(scanner, &parser);
 
     yylex_destroy(scanner);
     return 0;
 }
+
+void yyerror(YYLTYPE* locp, yyscan_t scanner, parser_t* parser, const char* msg) {}

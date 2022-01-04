@@ -118,10 +118,17 @@ void print_err_msg(int first_line,
     #define YYLTYPE_IS_DECLARED 1
     #define YYLTYPE_IS_TRIVIAL 0
 #endif
+typedef union YYSTYPE YYSTYPE;
+#define YY_DECL \
+       int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, parser_t* parser)
+YY_DECL;
+void yyerror(YYLTYPE* locp, yyscan_t scanner, parser_t* parser, const char* msg);
+
 }
 
 %param { yyscan_t scanner }
-%parse-param { symbol_c** tree_root }
+%param { parser_t* parser }
+// %parse-param { symbol_c** tree_root }
 %code {
     #include "parser_priv.h"
 
@@ -1302,8 +1309,6 @@ void print_err_msg(int first_line,
 %%
 
 
-
-
 /********************************************************/
 /********************************************************/
 /********************************************************/
@@ -1349,7 +1354,6 @@ void print_err_msg(int first_line,
 /********************************************************/
 /********************************************************/
 /********************************************************/
-
 
 start:
   library	{$$ = $1;}
@@ -1492,10 +1496,7 @@ prev_declared_program_type_name:           prev_declared_program_type_name_token
 /***************************/
 library:
   /* empty */
-	{if (*tree_root == NULL)
-	  *tree_root = new library_c();
-	 $$ = (list_c *)(*tree_root);
-	}
+	{ $$ = parser->root(); }
 | library library_element_declaration
 	{$$ = $1; $$->add_element($2);}
 | library any_pragma
@@ -8400,7 +8401,7 @@ void print_err_msg(int first_line,
       fprintf(stderr, "%s:%d: error: %s\n", first_filename, first_line, additional_error_msg);
   }
   //fprintf(stderr, "error %d: %s\n", yynerrs /* a global variable */, additional_error_msg);
-  print_include_stack();
+  //print_include_stack();
 }
 
 

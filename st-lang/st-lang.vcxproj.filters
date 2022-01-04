@@ -73,6 +73,9 @@
     <ClInclude Include="add_en_eno_param_decl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="traking.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Bison Include="parser.y">
@@ -81,6 +84,9 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="test1.txt">
+      <Filter>Resource Files</Filter>
+    </Text>
+    <Text Include="test2.txt">
       <Filter>Resource Files</Filter>
     </Text>
   </ItemGroup>

@@ -1,0 +1,3 @@
+VAR
+PIx2: REAL:= 2.0 * 3.1416;
+END_VAR

@@ -10,7 +10,9 @@ inline char* creat_strcopy(const char* str) {
     if (!cpy) {
         ERROR_MSG("Out of memory. Bailing out!\n");
     }
-    strcpy_s(cpy, len, str);
-    cpy[len] = 0;
+    if (strcpy_s(cpy, len + 1, str)) {
+        ERROR_MSG("strcpy_s failed. Bailing out!\n");
+    }
+    cpy[len] = '\0';
     return cpy;
 }

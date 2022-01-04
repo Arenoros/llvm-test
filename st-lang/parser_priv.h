@@ -3,4 +3,4 @@
 #include "parser.tab.h"
 #include "parser.lex.h"
 
-inline void yyerror(YYLTYPE* locp, yyscan_t scanner, symbol_c** tree_root, const char* msg) {}
+//extern int yylex(YYSTYPE* yylval_param, YYLTYPE* yylloc_param, yyscan_t yyscanner, parser_t* parser);

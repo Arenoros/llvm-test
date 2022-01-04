@@ -168,10 +168,12 @@
     <ClInclude Include="parser_priv.h" />
     <ClInclude Include="symtable.h" />
     <ClInclude Include="symtable.hxx" />
+    <ClInclude Include="traking.h" />
     <ClInclude Include="visitor.h" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="test1.txt" />
+    <Text Include="test2.txt" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="absyntax.h" />

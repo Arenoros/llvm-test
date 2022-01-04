@@ -1,51 +1,7 @@
 #pragma once
-/*
- *  matiec - a compiler for the programming languages defined in IEC 61131-3
- *
- *  Copyright (C) 2003-2011  Mario de Sousa (msousa@fe.up.pt)
- *  Copyright (C) 2007-2011  Laurent Bessard and Edouard Tisserant
- *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *
- * This code is made available on the understanding that it will not be
- * used in safety-critical situations without a full and competent review.
- */
-
-/*
- * An IEC 61131-3 compiler.
- *
- * Based on the
- * FINAL DRAFT - IEC 61131-3, 2nd Ed. (2001-12-10)
- *
- */
-
-/*
- * The private interface to stage1_2.cc
- */
-
-/* !!! WARNING !!!
- *
- *       Whoever includes this file (stage1_2_priv.hh) will need
- *       to first inlcude iec_bison.hh !!
- *
- *       Read other comments further down to understand why we don't
- *       include iec_bison.hh in this file.
- */
-
-/* file with the declarations of symbol tables... */
 #include "symtable.h"
+
+
 /*
  * This file includes the interface through which the lexical parser (stage 1 - flex)
  * and the syntax analyser (stage 2 - bison) interact between themselves.
@@ -97,12 +53,6 @@ bool get_opt_ref_standard_extensions();
 /*************************************************************/
 /*************************************************************/
 
-/*********************************************/
-/* print the include file stack to stderr... */
-/*********************************************/
-/* This is a service that flex provides to bison... */
-void print_include_stack(void);
-
 /*****************************************************/
 /* Ask flex to include the source code in the string */
 /*****************************************************/
@@ -126,7 +76,6 @@ void include_string(const char* source_code);
  * Returns NULL on error opening the file (and a valid errno), or 0 on success.
  * Caller must close the file!
  */
-FILE* parse_file(const char* filename);
 
 /**********************************************************************************************/
 /* whether bison is doing the pre-parsing, where POU bodies and var declarations are ignored! */
