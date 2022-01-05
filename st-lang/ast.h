@@ -685,9 +685,9 @@ public:
 #undef SYM_LIST
 #undef SYM_TOKEN
 #undef SYM_REF0
-#undef SYM_REFN
-#undef SYM_REFN
-#undef SYM_REFN
-#undef SYM_REFN
-#undef SYM_REFN
-#undef SYM_REFN
+#undef SYM_REF1
+#undef SYM_REF2
+#undef SYM_REF3
+#undef SYM_REF4
+#undef SYM_REF5
+#undef SYM_REF6

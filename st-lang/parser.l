@@ -45,6 +45,8 @@
    #include <string>
    #include "parser.tab.h"
    #include "flex_priv.h"
+   
+#pragma warning( disable : 4005)
 
 #define YY_USER_ACTION {\
         parser->backup_tracking();					\

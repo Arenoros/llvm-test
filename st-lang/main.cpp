@@ -37,8 +37,8 @@ int main() {
     /* Default values for the command line options... */
     runtime_options.relaxed_datatype_model = false; /* by default use the strict datatype equivalence model */
     parser_t parser;
-    yyset_extra(&parser, scanner);
-    parser_t* test = (parser_t*)yyget_extra(scanner);
+    //yyset_extra(&parser, scanner);
+    //parser_t* test = (parser_t*)yyget_extra(scanner);
 
     int rv = yyparse(scanner, &parser);
 
