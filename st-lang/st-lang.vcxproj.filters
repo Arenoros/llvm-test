@@ -67,7 +67,7 @@
     <ClInclude Include="flex_priv.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="absyntax.h">
+    <ClInclude Include="absyntax.def">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="add_en_eno_param_decl.h">

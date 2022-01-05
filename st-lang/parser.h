@@ -17,7 +17,7 @@ struct parser_t {
 
     /* The buffer used by the body_state state */
     tracking_t bodystate_init_tracking;
-    char* bodystate_buffer = NULL;
+    std::string bodystate_buffer;
     bool bodystate_is_whitespace = 1;
 
     int include_stack_ptr = 0;

@@ -192,28 +192,28 @@ int get_direct_variable_token(const char* direct_variable_str) {
 /************************/
 /* Utility Functions... */
 /************************/
-
-/*
- * Join two strings together. Allocate space with malloc(3).
- */
-char* strdup2(const char* a, const char* b) {
-    char* res = (char*)malloc(strlen(a) + strlen(b) + 1);
-
-    if (!res)
-        return NULL;
-    return strcat(strcpy(res, a), b); /* safe, actually */
-}
-
-/*
- * Join three strings together. Allocate space with malloc(3).
- */
-char* strdup3(const char* a, const char* b, const char* c) {
-    char* res = (char*)malloc(strlen(a) + strlen(b) + strlen(c) + 1);
-
-    if (!res)
-        return NULL;
-    return strcat(strcat(strcpy(res, a), b), c); /* safe, actually */
-}
+//
+///*
+// * Join two strings together. Allocate space with malloc(3).
+// */
+// char* strdup2(const char* a, const char* b) {
+//    char* res = (char*)malloc(strlen(a) + strlen(b) + 1);
+//
+//    if (!res)
+//        return NULL;
+//    return strcat(strcpy(res, a), b); /* safe, actually */
+//}
+//
+///*
+// * Join three strings together. Allocate space with malloc(3).
+// */
+// char* strdup3(const char* a, const char* b, const char* c) {
+//    char* res = (char*)malloc(strlen(a) + strlen(b) + strlen(c) + 1);
+//
+//    if (!res)
+//        return NULL;
+//    return strcat(strcat(strcpy(res, a), b), c); /* safe, actually */
+//}
 
 /***********************************************************************/
 /***********************************************************************/
@@ -242,3 +242,67 @@ void error_exit(const char* file_name, int line_no, const char* errmsg, ...) {
 
     exit(EXIT_FAILURE);
 }
+
+/***********************************/
+/* Utility function definitions... */
+/***********************************/
+
+/* Open an include file, and set the internal state variables of lexical analyser to process a new include file */
+void include_file(const char*) {}
+
+/* The body_state tries to find a ';' before a END_PROGRAM, END_FUNCTION or END_FUNCTION_BLOCK or END_ACTION
+ * and ignores ';' inside comments and pragmas. This means that we cannot do this in a signle lex rule.
+ * Body_state therefore stores ALL text we consume in every rule, so we can push it back into the buffer
+ * once we have decided if we are parsing ST or IL code. The following functions manage that buffer used by
+ * the body_state.
+ */
+/* The buffer used by the body_state state */
+void unput_char(const char c, yyscan_t yyscanner);
+/* Return all data in bodystate_buffer back to flex, and empty bodystate_buffer. */
+void unput_bodystate_buffer(yyscan_t scanner, parser_t* parser) {
+    if (parser->bodystate_buffer.empty())
+        ERROR;
+    // printf("<<<unput_bodystate_buffer>>>\n%s\n", parser->bodystate_buffer);
+
+    for (size_t i = parser->bodystate_buffer.size(); i > 0; i--)
+        unput_char(parser->bodystate_buffer[i - 1], scanner);
+
+    parser->bodystate_buffer.clear();
+    parser->bodystate_is_whitespace = true;
+    *parser->current_tracking = parser->bodystate_init_tracking;
+}
+
+/* append text to bodystate_buffer */
+void append_bodystate_buffer(const char* text, parser_t* parser, int is_whitespace) {
+    // printf("<<<append_bodystate_buffer>>> %d <%s><%s>\n", parser->bodystate_buffer, text, (NULL !=
+    // parser->bodystate_buffer)? parser->bodystate_buffer:"NULL");
+
+    // make backup of tracking if we are starting off a new body_state_buffer
+    if (parser->bodystate_buffer.empty())
+        parser->bodystate_init_tracking = *parser->current_tracking;
+    // set bodystate_is_whitespace flag if we are starting a new buffer
+    if (parser->bodystate_buffer.empty())
+        parser->bodystate_is_whitespace = true;
+    // set bodystate_is_whitespace flag to FALSE if we are adding non white space to buffer
+    if (!is_whitespace)
+        parser->bodystate_is_whitespace = 0;
+
+    parser->bodystate_buffer += text;
+}
+
+/* Return true if bodystate_buffer is empty or ony contains whitespace!! */
+int isempty_bodystate_buffer(parser_t* parser) {
+    if (parser->bodystate_buffer.empty())
+        return 1;
+    if (parser->bodystate_is_whitespace)
+        return 1;
+    return 0;
+}
+
+/*******************************/
+/* Public Interface for Bison. */
+/*******************************/
+
+/* The following functions will be called from inside bison code! */
+
+void include_string(const char* source_code) {}

@@ -1500,114 +1500,42 @@ _			/* do nothing - eat it up!*/
 
 %%
 
-
-/***********************************/
-/* Utility function definitions... */
-/***********************************/
-
-/* Open an include file, and set the internal state variables of lexical analyser to process a new include file */
-void include_file(const char *) {}
-
 /* return the specified character to the input stream */
 /* WARNING: this function destroys the contents of yytext */
 void unput_char(const char c, yyscan_t yyscanner) {
-  struct yyguts_t * yyg = (struct yyguts_t*)yyscanner;
-  unput(c);
+    struct yyguts_t* yyg = (struct yyguts_t*)yyscanner;
+    unput(c);
 }
-
 
 /* return all the text in the current token back to the input stream, except the first n chars. */
 void unput_text(int n, yyscan_t scanner, parser_t* parser) {
-  struct yyguts_t * yyg = (struct yyguts_t*)scanner;
-  if (n < 0) ERROR;
-  signed int i; // must be signed! The iterartion may end with -1 when this function is called with n=0 !!
+    struct yyguts_t* yyg = (struct yyguts_t*)scanner;
+    if (n < 0)
+        ERROR;
+    signed int i;  // must be signed! The iterartion may end with -1 when this function is called with n=0 !!
 
-  char *yycopy = creat_strcopy(yytext); /* unput_char() destroys yytext, so we copy it first */
-  for (int i = yyleng-1; i >= n; i--)
-    unput_char(yycopy[i], scanner);
-	
-  yycopy[n] = '\0';
-  if(parser)
-    parser->restore_tracking();
-	parser->UpdateTracking(yycopy);
-  
-  free(yycopy);
+    char* yycopy = creat_strcopy(yytext); /* unput_char() destroys yytext, so we copy it first */
+    for (int i = yyleng - 1; i >= n; i--)
+        unput_char(yycopy[i], scanner);
+
+    yycopy[n] = '\0';
+    if (parser)
+        parser->restore_tracking();
+    parser->UpdateTracking(yycopy);
+
+    free(yycopy);
 }
 
-
-
-/* return all the text in the current token back to the input stream, 
- * but first return to the stream an additional character to mark the end of the token. 
+/* return all the text in the current token back to the input stream,
+ * but first return to the stream an additional character to mark the end of the token.
  */
 void unput_and_mark(const char mark_char, yyscan_t scanner, parser_t* parser) {
-  struct yyguts_t * yyg = (struct yyguts_t*)scanner;
-  char *yycopy = creat_strcopy( yytext ); /* unput_char() destroys yytext, so we copy it first */
-  unput_char(mark_char, scanner);
-  for (int i = yyleng-1; i >= 0; i--)
-    unput_char(yycopy[i], scanner);
+    struct yyguts_t* yyg = (struct yyguts_t*)scanner;
+    char* yycopy = creat_strcopy(yytext); /* unput_char() destroys yytext, so we copy it first */
+    unput_char(mark_char, scanner);
+    for (int i = yyleng - 1; i >= 0; i--)
+        unput_char(yycopy[i], scanner);
 
-  free(yycopy);
-  parser->restore_tracking();
+    free(yycopy);
+    parser->restore_tracking();
 }
-
-
-
-/* The body_state tries to find a ';' before a END_PROGRAM, END_FUNCTION or END_FUNCTION_BLOCK or END_ACTION
- * and ignores ';' inside comments and pragmas. This means that we cannot do this in a signle lex rule.
- * Body_state therefore stores ALL text we consume in every rule, so we can push it back into the buffer
- * once we have decided if we are parsing ST or IL code. The following functions manage that buffer used by
- * the body_state.
- */
-/* The buffer used by the body_state state */
-
-
-/* append text to bodystate_buffer */
-void append_bodystate_buffer(const char *text, parser_t* parser, int is_whitespace) {
-  // printf("<<<append_bodystate_buffer>>> %d <%s><%s>\n", parser->bodystate_buffer, text, (NULL != parser->bodystate_buffer)? parser->bodystate_buffer:"NULL");
-  long int old_len = 0;
-  // make backup of tracking if we are starting off a new body_state_buffer
-  if (NULL == parser->bodystate_buffer) parser->bodystate_init_tracking = *parser->current_tracking;
-  // set bodystate_is_whitespace flag if we are starting a new buffer
-  if (NULL == parser->bodystate_buffer) parser->bodystate_is_whitespace = 1;
-  // set bodystate_is_whitespace flag to FALSE if we are adding non white space to buffer
-  if (!is_whitespace)          parser->bodystate_is_whitespace = 0;
-
-  if (NULL != parser->bodystate_buffer) old_len = strlen(parser->bodystate_buffer);
-  parser->bodystate_buffer = (char *)realloc(parser->bodystate_buffer, old_len + strlen(text) + 1);
-  if (NULL == parser->bodystate_buffer) ERROR;
-  strcpy(parser->bodystate_buffer + old_len, text);
-  // printf("=<%s> %d %d\n", (NULL != parser->bodystate_buffer)? parser->bodystate_buffer: NULL, old_len + strlen(text) + 1, parser->bodystate_buffer);
-}
-
-/* Return all data in bodystate_buffer back to flex, and empty bodystate_buffer. */
-void unput_bodystate_buffer(yyscan_t scanner, parser_t* parser) {
-  if (NULL == parser->bodystate_buffer) ERROR;
-  // printf("<<<unput_bodystate_buffer>>>\n%s\n", parser->bodystate_buffer);
-  
-  for (long int i = strlen(parser->bodystate_buffer)-1; i >= 0; i--)
-    unput_char(parser->bodystate_buffer[i], scanner);
-  
-  free(parser->bodystate_buffer);
-  parser->bodystate_buffer        = NULL;
-  parser->bodystate_is_whitespace = 1;
-  *parser->current_tracking = parser->bodystate_init_tracking;
-}
-
-
-/* Return true if bodystate_buffer is empty or ony contains whitespace!! */
-int isempty_bodystate_buffer(parser_t* parser) {
-  if (NULL == parser->bodystate_buffer) return 1;
-  if (parser->bodystate_is_whitespace) return 1;
-  return 0;
-}
-
-
-
-
-/*******************************/
-/* Public Interface for Bison. */
-/*******************************/
-
-/* The following functions will be called from inside bison code! */
-
-void include_string(const char *source_code) {}

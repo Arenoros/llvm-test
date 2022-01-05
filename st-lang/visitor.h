@@ -13,7 +13,7 @@
 
 class visitor_c {
 public:
-#include "absyntax.h"
+#include "absyntax.def"
 
     virtual ~visitor_c(void);
 };
@@ -40,7 +40,7 @@ public:
 
 class null_visitor_c : public visitor_c {
 public:
-#include "absyntax.h"
+#include "absyntax.def"
 
     virtual ~null_visitor_c(void);
 };
@@ -1277,7 +1277,7 @@ protected:
     void* visit_list(list_c* list);
 
 public:
-#include "absyntax.h"
+#include "absyntax.def"
 
     virtual ~iterator_visitor_c(void);
 };
@@ -1288,7 +1288,7 @@ public:
     virtual void suffix_fcall(symbol_c* symbol);
 
 public:
-#include "absyntax.h"
+#include "absyntax.def"
 
     virtual ~fcall_iterator_visitor_c(void);
 };
@@ -1298,7 +1298,7 @@ protected:
     void* visit_list(list_c* list);
 
 public:
-#include "absyntax.h"
+#include "absyntax.def"
 
     virtual ~search_visitor_c(void);
 };

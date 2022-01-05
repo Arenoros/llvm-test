@@ -8,7 +8,7 @@ int main() {
     yyscan_t scanner;
     yylex_init(&scanner);
     FILE* fin = nullptr;
-    auto err = fopen_s(&fin, "test1.txt", "r");
+    auto err = fopen_s(&fin, "test2.txt", "r");
     if (err) {
         char errmsg[255] = {0};
         strerror_s(errmsg, 254, err);

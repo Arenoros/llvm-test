@@ -41,7 +41,7 @@
 
 #define FOR_EACH_ELEMENT(elem, list, code) {		\
   symbol_c *elem;					\
-  for(int i = 0; i < list->n; i++) {			\
+  for(int i = 0; i < list->size(); i++) {			\
     elem = list->get_element(i);			\
     code;						\
   }							\

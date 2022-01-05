@@ -81,7 +81,7 @@ add_en_eno_param_decl_c::~add_en_eno_param_decl_c(void) {
 
 
 void* add_en_eno_param_decl_c::iterate_list(list_c *list) {
-  for (int i = 0; i < list->n; i++) {
+  for (int i = 0; i < list->size(); i++) {
     list->get_element(i)->accept(*this);
   }
   return NULL;

@@ -111,7 +111,7 @@ null_visitor_c::~null_visitor_c(void) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.h"
+#include "absyntax.def"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
@@ -150,7 +150,7 @@ null_visitor_c::~null_visitor_c(void) {
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)                                                \
     void* fcall_visitor_c::visit(class_name_c* symbol) VISIT_METHOD;
 
-#include "absyntax.h"
+#include "absyntax.def"
 
 #undef VISIT_METHOD
 
@@ -173,7 +173,7 @@ iterator_visitor_c::~iterator_visitor_c(void) {
 }
 
 void* iterator_visitor_c::visit_list(list_c* list) {
-    for (int i = 0; i < list->n; i++) {
+    for (int i = 0; i < list->size(); i++) {
         list->get_element(i)->accept(*this);
     }
     return NULL;
@@ -266,7 +266,7 @@ void* iterator_visitor_c::visit_list(list_c* list) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.h"
+#include "absyntax.def"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
@@ -316,7 +316,7 @@ void fcall_iterator_visitor_c::suffix_fcall(symbol_c* symbol) {
 #define SYM_REF6(class_name_c, ref1, ref2, ref3, ref4, ref5, ref6, ...)                                                \
     void* fcall_iterator_visitor_c::visit(class_name_c* symbol) VISIT_METHOD;
 
-#include "absyntax.h"
+#include "absyntax.def"
 
 #undef VISIT_METHOD
 
@@ -339,7 +339,7 @@ search_visitor_c::~search_visitor_c(void) {
 }
 
 void* search_visitor_c::visit_list(list_c* list) {
-    for (int i = 0; i < list->n; i++) {
+    for (int i = 0; i < list->size(); i++) {
         void* res = list->get_element(i)->accept(*this);
         if (res != NULL)
             return res;
@@ -469,7 +469,7 @@ void* search_visitor_c::visit_list(list_c* list) {
         return NULL;                                                                                                   \
     }
 
-#include "absyntax.h"
+#include "absyntax.def"
 
 #undef SYM_LIST
 #undef SYM_TOKEN
