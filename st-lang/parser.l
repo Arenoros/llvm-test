@@ -64,7 +64,6 @@
         parser->current_order++;							\
 	}
 
-int get_identifier_token(const char *identifier_str);
 char* craet_strcopy(const char* str);
 %}
 
@@ -91,9 +90,7 @@ void include_file(const char *include_filename);
  * once we have decided if we are parsing ST or IL code. The following functions manage that buffer used by
  * the body_state.
  */
-void append_bodystate_buffer(const char *text, parser_t* parser, int is_whitespace = 0);
-void unput_bodystate_buffer(yyscan_t scanner, parser_t* parser);
-int isempty_bodystate_buffer(parser_t* parser);
+
 
 %}
 
@@ -553,29 +550,29 @@ incompl_location	%[IQM]\*
 	/* Handle requests sent by bison for flex to change state. */
 	/***********************************************************/
 	
-	if (get_goto_body_state()) {
+	if (parser->get_goto_body_state()) {
 	  yy_push_state(body_state, yyscanner);
-	  rst_goto_body_state();
+	  parser->rst_goto_body_state();
 	}
 
-	if (get_goto_sfc_qualifier_state()) {
+	if (parser->get_goto_sfc_qualifier_state()) {
 	  yy_push_state(sfc_qualifier_state, yyscanner);
-	  rst_goto_sfc_qualifier_state();
+	  parser->rst_goto_sfc_qualifier_state();
 	}
 
-	if (get_goto_sfc_priority_state()) {
+	if (parser->get_goto_sfc_priority_state()) {
 	  yy_push_state(sfc_priority_state, yyscanner);
-	  rst_goto_sfc_priority_state();
+	  parser->rst_goto_sfc_priority_state();
 	}
 
-	if (get_goto_task_init_state()) {
+	if (parser->get_goto_task_init_state()) {
 	  yy_push_state(task_init_state, yyscanner);
-	  rst_goto_task_init_state();
+	  parser->rst_goto_task_init_state();
 	}
 
-	if (get_pop_state()) {
+	if (parser->get_pop_state()) {
 	  yy_pop_state(yyscanner);
-	  rst_pop_state();
+	  parser->rst_pop_state();
 	}
 
 	/***************************/
@@ -597,11 +594,11 @@ incompl_location	%[IQM]\*
 {enable_code_generation_pragma}					return enable_code_generation_pragma_token;
 <vardecl_list_state>{disable_code_generation_pragma}/(VAR)	return disable_code_generation_pragma_token; 
 <vardecl_list_state>{enable_code_generation_pragma}/(VAR)	return enable_code_generation_pragma_token;  
-<body_state>{disable_code_generation_pragma}			append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
-<body_state>{enable_code_generation_pragma}			append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{disable_code_generation_pragma}			parser->append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{enable_code_generation_pragma}			parser->append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
 	/* Any other pragma we find, we just pass it up to the syntax parser...   */
 	/* Note that the <body_state> state is exclusive, so we have to include it here too. */
-<body_state>{pragma}					append_bodystate_buffer(yytext, parser); /* in body state we do not process any tokens, we simply store them for later processing! */
+<body_state>{pragma}					parser->append_bodystate_buffer(yytext); /* in body state we do not process any tokens, we simply store them for later processing! */
 {pragma}	{/* return the pragmma without the enclosing '{' and '}' */
 		 int cut = yytext[1]=='{'?2:1;
 		 yytext[strlen(yytext)-cut] = '\0';
@@ -673,10 +670,10 @@ incompl_location	%[IQM]\*
 
 	/* INITIAL -> header_state */
 <INITIAL>{
-FUNCTION{st_whitespace} 		if (get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return FUNCTION;
-FUNCTION_BLOCK{st_whitespace}		if (get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return FUNCTION_BLOCK;
-PROGRAM{st_whitespace}			if (get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return PROGRAM;
-CONFIGURATION{st_whitespace}		if (get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(config_state);/* printf("\nChanging to config_state\n"); */} return CONFIGURATION;
+FUNCTION{st_whitespace} 		if (parser->get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return FUNCTION;
+FUNCTION_BLOCK{st_whitespace}		if (parser->get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return FUNCTION_BLOCK;
+PROGRAM{st_whitespace}			if (parser->get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(header_state);/* printf("\nChanging to header_state\n"); */} return PROGRAM;
+CONFIGURATION{st_whitespace}		if (parser->get_preparse_state()) BEGIN(get_pou_name_state); else {BEGIN(config_state);/* printf("\nChanging to config_state\n"); */} return CONFIGURATION;
 }
 
 <get_pou_name_state>{
@@ -795,16 +792,16 @@ END_VAR				yy_pop_state(yyscanner); return END_VAR; /* pop back to vardecl_list_
 				  * However, it is possible to enter the body_state from other states (e.g. when 
 				  * parsing SFC code, that contains transitions or actions in other languages)
 				  */
-				 append_bodystate_buffer(yytext, parser, 1 /* is whitespace */); 
+				 parser->append_bodystate_buffer(yytext, 1 /* is whitespace */); 
 				}
 	/* 'INITIAL_STEP' always used in beginning of SFCs !! */
-INITIAL_STEP			{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(sfc_state);}
-				  else					{append_bodystate_buffer(yytext, parser);}
+INITIAL_STEP			{ if (parser->isempty_bodystate_buffer())	{unput_text(0, yyscanner, parser); BEGIN(sfc_state);}
+				  else					{parser->append_bodystate_buffer(yytext);}
 				}
  
 	/* ':=', at the very beginning of a 'body', occurs only in transitions and not Function, FB, or Program bodies! */
-:=				{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(st_state);} /* We do _not_ return a start_ST_body_token here, as bison does not expect it! */
-				  else				 	{append_bodystate_buffer(yytext, parser);}
+:=				{ if (parser->isempty_bodystate_buffer())	{unput_text(0, yyscanner, parser); BEGIN(st_state);} /* We do _not_ return a start_ST_body_token here, as bison does not expect it! */
+				  else				 	{parser->append_bodystate_buffer(yytext);}
 				}
  
 	/* check if ';' occurs before an END_FUNCTION, END_FUNCTION_BLOCK, END_PROGRAM, END_ACTION or END_TRANSITION. (If true => we are parsing ST; If false => parsing IL). */
@@ -812,10 +809,10 @@ END_ACTION			| /* execute the next rule's action, i.e. fall-through! */
 END_FUNCTION			|
 END_FUNCTION_BLOCK		|
 END_TRANSITION   		|
-END_PROGRAM			{ append_bodystate_buffer(yytext, parser); unput_bodystate_buffer(yyscanner, parser); BEGIN(il_state); /*printf("returning start_IL_body_token\n");*/ return start_IL_body_token;}
-.|\n				{ append_bodystate_buffer(yytext, parser);
+END_PROGRAM			{ parser->append_bodystate_buffer(yytext); parser->unput_bodystate_buffer(yyscanner); BEGIN(il_state); /*printf("returning start_IL_body_token\n");*/ return start_IL_body_token;}
+.|\n				{ parser->append_bodystate_buffer(yytext);
 				  if (strcmp(yytext, ";") == 0)
-				    {unput_bodystate_buffer(yyscanner, parser); BEGIN(st_state); /*printf("returning start_ST_body_token\n");*/ return start_ST_body_token;}
+				    {parser->unput_bodystate_buffer(yyscanner); BEGIN(st_state); /*printf("returning start_ST_body_token\n");*/ return start_ST_body_token;}
 				}
 	/* The following rules are not really necessary. They just make compilation faster in case the ST Statement List starts with one fot he following... */
 RETURN				| /* execute the next rule's action, i.e. fall-through! */
@@ -824,8 +821,8 @@ CASE				|
 FOR				|
 WHILE				|
 EXIT				|
-REPEAT				{ if (isempty_bodystate_buffer(parser))	{unput_text(0, yyscanner, parser); BEGIN(st_state); return start_ST_body_token;}
-				  else				 	{append_bodystate_buffer(yytext, parser);}
+REPEAT				{ if (parser->isempty_bodystate_buffer())	{unput_text(0, yyscanner, parser); BEGIN(st_state); return start_ST_body_token;}
+				  else				 	{parser->append_bodystate_buffer(yytext);}
 				}
 
 }	/* end of body_state lexical parser */
@@ -869,7 +866,7 @@ END_CONFIGURATION	BEGIN(INITIAL); return END_CONFIGURATION;
 <get_pou_name_state,ignore_pou_state,body_state,vardecl_list_state>{comment_beg}		yy_push_state(comment_state, yyscanner);
 {comment_beg}						yy_push_state(comment_state, yyscanner);
 <comment_state>{
-{comment_beg}						{if (get_opt_nested_comments()) yy_push_state(comment_state, yyscanner);}
+{comment_beg}						{if (parser->get_opt_nested_comments()) yy_push_state(comment_state, yyscanner);}
 {comment_end}						yy_pop_state(yyscanner);
 .							/* Ignore text inside comment! */
 \n							/* Ignore text inside comment! */
@@ -911,7 +908,7 @@ END_CONFIGURATION	BEGIN(INITIAL); return END_CONFIGURATION;
 	 *       in the mercurial repository to figure out the missing code!
 	 */
  /*
-{identifier} 	{int token = get_identifier_token(yytext);
+{identifier} 	{int token = parser->get_identifier_token(yytext);
 		 // fprintf(stderr, "flex: analysing identifier '%s'...", yytext); 
 		 if ((token == prev_declared_variable_name_token) ||
 //		     (token == prev_declared_derived_function_name_token) || // DO NOT add this condition!
@@ -945,10 +942,10 @@ END_CONFIGURATION	BEGIN(INITIAL); return END_CONFIGURATION;
 	/******************************************************/
 
 
-REF	{if (get_opt_ref_standard_extensions()) return REF;        else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
-DREF	{if (get_opt_ref_standard_extensions()) return DREF;       else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
-REF_TO	{if (get_opt_ref_standard_extensions()) return REF_TO;     else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
-NULL	{if (get_opt_ref_standard_extensions()) return NULL_token; else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
+REF	{if (parser->get_opt_ref_standard_extensions()) return REF;        else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
+DREF	{if (parser->get_opt_ref_standard_extensions()) return DREF;       else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
+REF_TO	{if (parser->get_opt_ref_standard_extensions()) return REF_TO;     else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
+NULL	{if (parser->get_opt_ref_standard_extensions()) return NULL_token; else{REJECT;}}		/* Keyword in IEC 61131-3 v3 */
 
 EN	return EN;			/* Keyword */
 ENO	return ENO;			/* Keyword */
@@ -960,14 +957,14 @@ ENO	return ENO;			/* Keyword */
 TRUE		return TRUE;		/* Keyword */
 BOOL#1  	return boolean_true_literal_token;
 BOOL#TRUE	return boolean_true_literal_token;
-SAFEBOOL#1	{if (get_opt_safe_extensions()) {return safeboolean_true_literal_token;} else{REJECT;}} /* Keyword (Data Type) */ 
-SAFEBOOL#TRUE	{if (get_opt_safe_extensions()) {return safeboolean_true_literal_token;} else{REJECT;}} /* Keyword (Data Type) */
+SAFEBOOL#1	{if (parser->get_opt_safe_extensions()) {return safeboolean_true_literal_token;} else{REJECT;}} /* Keyword (Data Type) */ 
+SAFEBOOL#TRUE	{if (parser->get_opt_safe_extensions()) {return safeboolean_true_literal_token;} else{REJECT;}} /* Keyword (Data Type) */
 
 FALSE		return FALSE;		/* Keyword */
 BOOL#0  	return boolean_false_literal_token;
 BOOL#FALSE  	return boolean_false_literal_token;
-SAFEBOOL#0	{if (get_opt_safe_extensions()) {return safeboolean_false_literal_token;} else{REJECT;}} /* Keyword (Data Type) */ 
-SAFEBOOL#FALSE	{if (get_opt_safe_extensions()) {return safeboolean_false_literal_token;} else{REJECT;}} /* Keyword (Data Type) */
+SAFEBOOL#0	{if (parser->get_opt_safe_extensions()) {return safeboolean_false_literal_token;} else{REJECT;}} /* Keyword (Data Type) */ 
+SAFEBOOL#FALSE	{if (parser->get_opt_safe_extensions()) {return safeboolean_false_literal_token;} else{REJECT;}} /* Keyword (Data Type) */
 
 
 	/************************/
@@ -1024,7 +1021,7 @@ DATE_AND_TIME	return DATE_AND_TIME;	/* Keyword (Data Type) */
 TIME_OF_DAY	return TIME_OF_DAY;	/* Keyword (Data Type) */
 
 					/* A non-standard extension! */
-VOID		{if (runtime_options.allow_void_datatype) {return VOID;}          else {REJECT;}} 
+VOID		{if (parser->runtime_options.allow_void_datatype) {return VOID;}          else {REJECT;}} 
 
 
 	/*****************************************************************/
@@ -1040,39 +1037,39 @@ VOID		{if (runtime_options.allow_void_datatype) {return VOID;}          else {RE
          *        We only support these extensions and keywords
          *        if the apropriate command line option is given.
          */
-SAFEBOOL	     {if (get_opt_safe_extensions()) {return SAFEBOOL;}          else {REJECT;}} 
+SAFEBOOL	     {if (parser->get_opt_safe_extensions()) {return SAFEBOOL;}          else {REJECT;}} 
 
-SAFEBYTE	     {if (get_opt_safe_extensions()) {return SAFEBYTE;}          else {REJECT;}} 
-SAFEWORD	     {if (get_opt_safe_extensions()) {return SAFEWORD;}          else {REJECT;}} 
-SAFEDWORD	     {if (get_opt_safe_extensions()) {return SAFEDWORD;}         else{REJECT;}}
-SAFELWORD	     {if (get_opt_safe_extensions()) {return SAFELWORD;}         else{REJECT;}}
+SAFEBYTE	     {if (parser->get_opt_safe_extensions()) {return SAFEBYTE;}          else {REJECT;}} 
+SAFEWORD	     {if (parser->get_opt_safe_extensions()) {return SAFEWORD;}          else {REJECT;}} 
+SAFEDWORD	     {if (parser->get_opt_safe_extensions()) {return SAFEDWORD;}         else{REJECT;}}
+SAFELWORD	     {if (parser->get_opt_safe_extensions()) {return SAFELWORD;}         else{REJECT;}}
                
-SAFEREAL	     {if (get_opt_safe_extensions()) {return SAFESINT;}          else{REJECT;}}
-SAFELREAL    	     {if (get_opt_safe_extensions()) {return SAFELREAL;}         else{REJECT;}}
+SAFEREAL	     {if (parser->get_opt_safe_extensions()) {return SAFESINT;}          else{REJECT;}}
+SAFELREAL    	     {if (parser->get_opt_safe_extensions()) {return SAFELREAL;}         else{REJECT;}}
                   
-SAFESINT	     {if (get_opt_safe_extensions()) {return SAFESINT;}          else{REJECT;}}
-SAFEINT	             {if (get_opt_safe_extensions()) {return SAFEINT;}           else{REJECT;}}
-SAFEDINT	     {if (get_opt_safe_extensions()) {return SAFEDINT;}          else{REJECT;}}
-SAFELINT             {if (get_opt_safe_extensions()) {return SAFELINT;}          else{REJECT;}}
+SAFESINT	     {if (parser->get_opt_safe_extensions()) {return SAFESINT;}          else{REJECT;}}
+SAFEINT	             {if (parser->get_opt_safe_extensions()) {return SAFEINT;}           else{REJECT;}}
+SAFEDINT	     {if (parser->get_opt_safe_extensions()) {return SAFEDINT;}          else{REJECT;}}
+SAFELINT             {if (parser->get_opt_safe_extensions()) {return SAFELINT;}          else{REJECT;}}
 
-SAFEUSINT            {if (get_opt_safe_extensions()) {return SAFEUSINT;}         else{REJECT;}}
-SAFEUINT             {if (get_opt_safe_extensions()) {return SAFEUINT;}          else{REJECT;}}
-SAFEUDINT            {if (get_opt_safe_extensions()) {return SAFEUDINT;}         else{REJECT;}}
-SAFEULINT            {if (get_opt_safe_extensions()) {return SAFEULINT;}         else{REJECT;}}
+SAFEUSINT            {if (parser->get_opt_safe_extensions()) {return SAFEUSINT;}         else{REJECT;}}
+SAFEUINT             {if (parser->get_opt_safe_extensions()) {return SAFEUINT;}          else{REJECT;}}
+SAFEUDINT            {if (parser->get_opt_safe_extensions()) {return SAFEUDINT;}         else{REJECT;}}
+SAFEULINT            {if (parser->get_opt_safe_extensions()) {return SAFEULINT;}         else{REJECT;}}
 
  /* SAFESTRING and SAFEWSTRING are not yet supported, i.e. checked correctly, in the semantic analyser (stage 3) */
  /*  so it is best not to support them at all... */
  /*
-SAFEWSTRING          {if (get_opt_safe_extensions()) {return SAFEWSTRING;}       else{REJECT;}}
-SAFESTRING           {if (get_opt_safe_extensions()) {return SAFESTRING;}        else{REJECT;}}
+SAFEWSTRING          {if (parser->get_opt_safe_extensions()) {return SAFEWSTRING;}       else{REJECT;}}
+SAFESTRING           {if (parser->get_opt_safe_extensions()) {return SAFESTRING;}        else{REJECT;}}
  */
 
-SAFETIME             {if (get_opt_safe_extensions()) {return SAFETIME;}          else{REJECT;}}
-SAFEDATE             {if (get_opt_safe_extensions()) {return SAFEDATE;}          else{REJECT;}}
-SAFEDT               {if (get_opt_safe_extensions()) {return SAFEDT;}            else{REJECT;}}
-SAFETOD              {if (get_opt_safe_extensions()) {return SAFETOD;}           else{REJECT;}}
-SAFEDATE_AND_TIME    {if (get_opt_safe_extensions()) {return SAFEDATE_AND_TIME;} else{REJECT;}}
-SAFETIME_OF_DAY      {if (get_opt_safe_extensions()) {return SAFETIME_OF_DAY;}   else{REJECT;}}
+SAFETIME             {if (parser->get_opt_safe_extensions()) {return SAFETIME;}          else{REJECT;}}
+SAFEDATE             {if (parser->get_opt_safe_extensions()) {return SAFEDATE;}          else{REJECT;}}
+SAFEDT               {if (parser->get_opt_safe_extensions()) {return SAFEDT;}            else{REJECT;}}
+SAFETOD              {if (parser->get_opt_safe_extensions()) {return SAFETOD;}           else{REJECT;}}
+SAFEDATE_AND_TIME    {if (parser->get_opt_safe_extensions()) {return SAFEDATE_AND_TIME;} else{REJECT;}}
+SAFETIME_OF_DAY      {if (parser->get_opt_safe_extensions()) {return SAFETIME_OF_DAY;}   else{REJECT;}}
 
 	/********************************/
 	/* B 1.3.2 - Generic data types */
@@ -1418,7 +1415,7 @@ EXIT		return EXIT;		/* Keyword */
 	/********************************************/
 	/* B.1.4.1   Directly Represented Variables */
 	/********************************************/
-{direct_variable}   {yylval->ID=creat_strcopy(yytext); return get_direct_variable_token(yytext);}
+{direct_variable}   {yylval->ID=creat_strcopy(yytext); return parser->get_direct_variable_token(yytext);}
 
 
 	/******************************************/
@@ -1474,8 +1471,8 @@ _			/* do nothing - eat it up!*/
 <st_state>{identifier}/({st_whitespace_or_pragma_or_comment})"=>"	{yylval->ID=creat_strcopy(yytext); return sendto_identifier_token;}
 <il_state>{identifier}/({il_whitespace_or_pragma_or_comment})"=>"	{yylval->ID=creat_strcopy(yytext); return sendto_identifier_token;}
 {identifier} 				{yylval->ID=creat_strcopy(yytext);
-					 // printf("returning identifier...: %s, %d\n", yytext, get_identifier_token(yytext));
-					 return get_identifier_token(yytext);}
+					 // printf("returning identifier...: %s, %d\n", yytext, parser->get_identifier_token(yytext));
+					 return parser->get_identifier_token(yytext);}
 
 
 

@@ -25,24 +25,7 @@
 /*************************************************************/
 /*************************************************************/
 
-/******************************************************/
-/* whether we are suporting safe extensions           */
-/* as defined in PLCopen - Technical Committee 5      */
-/* Safety Software Technical Specification,           */
-/* Part 1: Concepts and Function Blocks,              */
-/* Version 1.0 – Official Release                     */
-/******************************************************/
-bool get_opt_safe_extensions();
 
-/************************************/
-/* whether to allow nested comments */
-/************************************/
-bool get_opt_nested_comments();
-
-/**************************************************************************/
-/* whether to allow REF(), DREF(), REF_TO, NULL and ^ operators/keywords  */
-/**************************************************************************/
-bool get_opt_ref_standard_extensions();
 
 /*************************************************************/
 /*************************************************************/
@@ -66,108 +49,6 @@ bool get_opt_ref_standard_extensions();
  */
 void include_string(const char* source_code);
 
-/**********************************/
-/* Tell flex which file to parse. */
-/**********************************/
-/* This is a service that flex provides to bison... */
-/* Tell flex which file to parse. This function will not imediately start parsing the file.
- * To parse the file, you then need to call yyparse()
- *
- * Returns NULL on error opening the file (and a valid errno), or 0 on success.
- * Caller must close the file!
- */
-
-/**********************************************************************************************/
-/* whether bison is doing the pre-parsing, where POU bodies and var declarations are ignored! */
-/**********************************************************************************************/
-void set_preparse_state(void);
-void rst_preparse_state(void);
-bool get_preparse_state();  // returns true if bison is in preparse state
-
-/****************************************************/
-/* Controlling the entry to the body_state in flex. */
-/****************************************************/
-void cmd_goto_body_state(void);
-int get_goto_body_state(void);
-void rst_goto_body_state(void);
-
-/*************************************************************/
-/* Controlling the entry to the sfc_qualifier_state in flex. */
-/*************************************************************/
-void cmd_goto_sfc_qualifier_state(void);
-int get_goto_sfc_qualifier_state(void);
-void rst_goto_sfc_qualifier_state(void);
-
-/*************************************************************/
-/* Controlling the entry to the sfc_priority_state in flex.  */
-/*************************************************************/
-void cmd_goto_sfc_priority_state(void);
-int get_goto_sfc_priority_state(void);
-void rst_goto_sfc_priority_state(void);
-
-/*********************************************************/
-/* Controlling the entry to the task_init_state in flex. */
-/*********************************************************/
-void cmd_goto_task_init_state(void);
-int get_goto_task_init_state(void);
-void rst_goto_task_init_state(void);
-
-/****************************************************************/
-/* Returning to state in flex previously pushed onto the stack. */
-/****************************************************************/
-void cmd_pop_state(void);
-int get_pop_state(void);
-void rst_pop_state(void);
-
-/*********************************/
-/* The global symbol tables...   */
-/*********************************/
-/* NOTE: only accessed indirectly by the lexical parser (flex)
- *       through the function get_identifier_token()
- *
- *       Bison accesses these data structures directly.
- *
- *       In essence, they are a data passing mechanism between Bison and Flex.
- */
-/* A symbol table to store all the library elements */
-/* e.g.: <function_name , function_decl>
- *       <fb_name , fb_decl>
- *       <type_name , type_decl>
- *       <program_name , program_decl>
- *       <configuration_name , configuration_decl>
- */
-typedef symtable_c<int> library_element_symtable_t;
-extern library_element_symtable_t library_element_symtable;
-
-/* A symbol table to store the declared variables of
- * the function currently being parsed...
- */
-typedef symtable_c<int> variable_name_symtable_t;
-extern variable_name_symtable_t variable_name_symtable;
-
-/* A symbol table to store the declared direct variables of
- * the function currently being parsed...
- */
-typedef symtable_c<int> direct_variable_symtable_t;
-extern direct_variable_symtable_t direct_variable_symtable;
-
-/* Function only called from within flex!
- *
- * search for a symbol in either of the two symbol tables
- * declared above, and return the token id of the first
- * symbol found.
- * Searches first in the variables, and only if not found
- * does it continue searching in the library elements
- */
-int get_identifier_token(const char* identifier_str);
-
-/* Function only called from within flex!
- *
- * search for a symbol in direct variables symbol table
- * declared above, and return the token id of the first
- * symbol found.
- */
-int get_direct_variable_token(const char* direct_variable_str);
 
 /*************************************************************/
 /*************************************************************/

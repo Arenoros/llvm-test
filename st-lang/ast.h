@@ -95,7 +95,7 @@ extern void error_exit(const char* file_name, int line_no, const char* errmsg = 
 
 /* Compiler options, specified at runtime on the command line */
 
-typedef struct {
+typedef struct runtime_options_t {
     /* options specific to stage1_2 */
     bool allow_void_datatype; /* Allow declaration of functions returning VOID  */
     bool
@@ -119,9 +119,13 @@ typedef struct {
     /* options specific to stage3 */
     bool relaxed_datatype_model; /* Use the relaxed datatype equivalence model, instead of the default strict
                                     equivalence model */
-} runtime_options_t;
+    runtime_options_t()
+        : allow_void_datatype(false), allow_missing_var_in(false), disable_implicit_en_eno(false), pre_parsing(false),
+          safe_extensions(false), full_token_loc(false), conversion_functions(false), nested_comments(false),
+          ref_standard_extensions(false), ref_nonstand_extensions(false), nonliteral_in_array_size(false),
+          includedir(nullptr), relaxed_datatype_model(false) {}
+};
 
-extern runtime_options_t runtime_options;
 
 /* Forward declaration of the visitor interface
  * declared in the visitor.hh file
@@ -659,26 +663,26 @@ public:
 //#define SYM_REFN_DECL(r, data, elem) data elem;
 //#define SYM_REFN_DEF(r, data, elem) data elem,
 //
-//#define SYM_REFN(class_name_c, ...)                                                                                    \
-//    class class_name_c : public symbol_c {                                                                             \
-//    public:                                                                                                            \
-//        BOOST_PP_SEQ_FOR_EACH(SYM_REFN_DECL, symbol_c*, BOOST_PP_TUPLE_TO_SEQ((__VA_ARGS__)))                          \
-//    public:                                                                                                            \
-//        class_name_c(BOOST_PP_SEQ_FOR_EACH(SYM_REFN_DEF, symbol_c*, BOOST_PP_TUPLE_TO_SEQ((__VA_ARGS__))) int fl = 0,  \
-//                     int fc = 0,                                                                                       \
-//                     const char* ffile = NULL /* filename */,                                                          \
-//                     long int forder = 0,                                                                              \
-//                     int ll = 0,                                                                                       \
-//                     int lc = 0,                                                                                       \
-//                     const char* lfile = NULL /* filename */,                                                          \
-//                     long int lorder = 0);                                                                             \
-//        virtual void* accept(visitor_c& visitor);                                                                      \
-//        /* WARNING: only use this method for debugging purposes!! */                                                   \
-//        virtual const char* absyntax_cname(void) {                                                                     \
-//            return #class_name_c;                                                                                      \
-//        };                                                                                                             \
+//#define SYM_REFN(class_name_c, ...) \
+//    class class_name_c : public symbol_c { \
+//    public: \
+//        BOOST_PP_SEQ_FOR_EACH(SYM_REFN_DECL, symbol_c*, BOOST_PP_TUPLE_TO_SEQ((__VA_ARGS__))) \
+//    public: \
+//        class_name_c(BOOST_PP_SEQ_FOR_EACH(SYM_REFN_DEF, symbol_c*, BOOST_PP_TUPLE_TO_SEQ((__VA_ARGS__))) int fl = 0,
+//        \
+//                     int fc = 0, \
+//                     const char* ffile = NULL /* filename */, \
+//                     long int forder = 0, \
+//                     int ll = 0, \
+//                     int lc = 0, \
+//                     const char* lfile = NULL /* filename */, \
+//                     long int lorder = 0); \
+//        virtual void* accept(visitor_c& visitor); \
+//        /* WARNING: only use this method for debugging purposes!! */ \
+//        virtual const char* absyntax_cname(void) { \
+//            return #class_name_c; \
+//        }; \
 //    };
-
 
 #include "absyntax.def"
 

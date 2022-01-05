@@ -147,6 +147,7 @@
     <ClCompile Include="add_en_eno_param_decl.cpp" />
     <ClCompile Include="ast.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="parser.cpp" />
     <ClCompile Include="parser.flex.cpp" />
     <ClCompile Include="parser.tab.cpp" />
     <ClCompile Include="visitor.cpp" />

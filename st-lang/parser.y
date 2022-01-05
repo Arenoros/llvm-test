@@ -85,17 +85,6 @@ poutype_identifier_c *il_operator_c_2_poutype_identifier_c(symbol_c *il_operator
 /* ERROR_CHECK_BEGIN */
 bool is_current_syntax_token(int token);
 /* ERROR_CHECK_END */
-
-/* print an error message */
-void print_err_msg(int first_line,
-                   int first_column,
-                   const char *first_filename,
-                   long int first_order,
-                   int last_line,
-                   int last_column,
-                   const char *last_filename,
-                   long int last_order,
-                   const char *additional_error_msg);
                    
 %}
 
@@ -1503,9 +1492,9 @@ library:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | library error library_element_declaration
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unknown syntax error."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unknown syntax error."); yyerrok;}
 | library error END_OF_INPUT
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unknown syntax error."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unknown syntax error."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -1817,17 +1806,17 @@ integer_literal:
 | '-' integer	{$$ = new neg_integer_c($2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | integer_type_name signed_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
 | integer_type_name binary_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
 | integer_type_name octal_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
 | integer_type_name hex_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between integer type name and value in integer literal."); yynerrs++;}
 | integer_type_name '#' error
 	{$$ = NULL; 
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for integer literal.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for integer literal."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for integer literal.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for integer literal."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -1856,11 +1845,11 @@ real_literal:
 	{$$ = new real_literal_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | real_type_name signed_real
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between real type name and value in real literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between real type name and value in real literal."); yynerrs++;}
 | real_type_name '#' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for real literal.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for real literal."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for real literal.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for real literal."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -1900,17 +1889,17 @@ bit_string_literal:
  */
 /* ERROR_CHECK_BEGIN */
 | bit_string_type_name integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
 | bit_string_type_name binary_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
 | bit_string_type_name octal_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
 | bit_string_type_name hex_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between bit string type name and value in bit string literal."); yynerrs++;}
 | bit_string_type_name '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for bit string literal.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for bit string literal."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for bit string literal.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for bit string literal."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2042,17 +2031,17 @@ duration:
 	{$$ = new duration_c(new safetime_type_name_c(locloc(@1)), new neg_time_c(locloc(@$)), $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | TIME interval
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME' and interval in duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME' and interval in duration."); yynerrs++;}
 | TIME '-' interval
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME' and interval in duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME' and interval in duration."); yynerrs++;}
 | TIME '#' erroneous_interval_token
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid value for duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid value for duration."); yynerrs++;}
 | T_SHARP erroneous_interval_token
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid value for duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid value for duration."); yynerrs++;}
 | TIME '#' '-' erroneous_interval_token
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid value for duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid value for duration."); yynerrs++;}
 | T_SHARP '-' erroneous_interval_token
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid value for duration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid value for duration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2109,11 +2098,11 @@ time_of_day:
 	{$$ = new time_of_day_c(new safetod_type_name_c(locloc(@1)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | TIME_OF_DAY daytime
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME_OF_DAY' and daytime in time of day."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between 'TIME_OF_DAY' and daytime in time of day."); yynerrs++;}
 | TIME_OF_DAY '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for time of day.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for time of day."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for time of day.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for time of day."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2125,21 +2114,21 @@ daytime:
 	{$$ = new daytime_c($1, $3, $5, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | ':' day_minute ':' day_second
-  {$$ = NULL; print_err_msg(locf(@1), locl(@4), "no value defined for hours in daytime."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@4), "no value defined for hours in daytime."); yynerrs++;}
 | error ':' day_minute ':' day_second
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid value defined for hours in daytime."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid value defined for hours in daytime."); yyerrok;}
 | day_hour day_minute ':' day_second
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between hours and minutes in daytime."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between hours and minutes in daytime."); yynerrs++;}
 | day_hour ':' ':' day_second
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no value defined for minutes in daytime."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no value defined for minutes in daytime."); yynerrs++;}
 | day_hour ':' error ':' day_second
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid value defined for minutes in daytime."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid value defined for minutes in daytime."); yyerrok;}
 | day_hour ':' day_minute day_second
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "':' missing between minutes and seconds in daytime."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "':' missing between minutes and seconds in daytime."); yynerrs++;}
 | day_hour ':' day_minute ':' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for seconds in daytime.");}
-	 else {print_err_msg(locf(@5), locl(@5), "invalid value for seconds in daytime."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@4), locf(@5), "no value defined for seconds in daytime.");}
+	 else {parser->print_err_msg(locf(@5), locl(@5), "invalid value for seconds in daytime."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2160,17 +2149,17 @@ date:
 	{$$ = new date_c(new safedate_type_name_c(locloc(@1)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | DATE date_literal
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'DATE' and date literal in date."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between 'DATE' and date literal in date."); yynerrs++;}
 | DATE '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for date.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for date."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for date.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for date."); yyclearin;}
 	 yyerrok;
 	}
 | D_SHARP error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no value defined for date.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid value for date."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no value defined for date.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid value for date."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2182,19 +2171,19 @@ date_literal:
 	{$$ = new date_literal_c($1, $3, $5, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | '-' month '-' day
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no value defined for year in date literal."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no value defined for year in date literal."); yynerrs++;}
 | year month '-' day
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "'-' missing between year and month in date literal."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'-' missing between year and month in date literal."); yynerrs++;}
 | year '-' '-' day
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no value defined for month in date literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no value defined for month in date literal."); yynerrs++;}
 | year '-' error '-' day
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid value defined for month in date literal."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid value defined for month in date literal."); yyerrok;}
 | year '-' month day
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "'-' missing between month and day in date literal."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "'-' missing between month and day in date literal."); yynerrs++;}
 | year '-' month '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for day in date literal.");}
-	 else {print_err_msg(locf(@5), locl(@5), "invalid value for day in date literal."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@4), locf(@5), "no value defined for day in date literal.");}
+	 else {parser->print_err_msg(locf(@5), locl(@5), "invalid value for day in date literal."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2213,17 +2202,17 @@ date_and_time:
 	{$$ = new date_and_time_c(new safedt_type_name_c(locloc(@1)), $3, $5, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | DATE_AND_TIME date_literal '-' daytime
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between 'DATE_AND_TIME' and date literal in date and time."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between 'DATE_AND_TIME' and date literal in date and time."); yynerrs++;}
 | DATE_AND_TIME '#' '-' daytime
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no value defined for date literal in date and time."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no value defined for date literal in date and time."); yynerrs++;}
 | DATE_AND_TIME '#' error '-' daytime
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid value for date literal in date and time."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid value for date literal in date and time."); yyerrok;}
 | DATE_AND_TIME '#' date_literal daytime
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "'-' missing between date literal and daytime in date and time."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "'-' missing between date literal and daytime in date and time."); yynerrs++;}
 | DATE_AND_TIME '#' date_literal '-' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@4), locf(@5), "no value defined for daytime in date and time.");}
-	 else {print_err_msg(locf(@5), locl(@5), "invalid value for daytime in date and time."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@4), locf(@5), "no value defined for daytime in date and time.");}
+	 else {parser->print_err_msg(locf(@5), locl(@5), "invalid value for daytime in date and time."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2424,13 +2413,13 @@ data_type_declaration:
 	{$$ = new data_type_declaration_c($2, locloc(@$)); }
 /* ERROR_CHECK_BEGIN */
 | TYPE END_TYPE
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no data type declared in data type(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no data type declared in data type(s) declaration."); yynerrs++;}
 | TYPE error type_declaration_list END_TYPE
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'TYPE' in data type(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'TYPE' in data type(s) declaration."); yyerrok;}
 | TYPE type_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed data type(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed data type(s) declaration."); yyerrok;}
 | TYPE error END_TYPE
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in data type(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in data type(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2442,15 +2431,15 @@ type_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new type_declaration_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid data type declaration."); yyerrok;}
+	{$$ = new type_declaration_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid data type declaration."); yyerrok;}
 | type_declaration error
-	{$$ = new type_declaration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of data type declaration."); yyerrok;}
+	{$$ = new type_declaration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of data type declaration."); yyerrok;}
 | type_declaration_list type_declaration error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of data type declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of data type declaration."); yyerrok;}
 | type_declaration_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid data type declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid data type declaration."); yyerrok;}
 | type_declaration_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after data type declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after data type declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2476,12 +2465,12 @@ simple_type_declaration:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' simple_specification           {library_element_symtable.insert($1, prev_declared_simple_type_name_token);}
-	{if (!get_preparse_state()) $$ = new simple_type_declaration_c($1, $3, locloc(@$));}
-| identifier ':' elementary_type_name           {library_element_symtable.insert($1, prev_declared_simple_type_name_token);} ASSIGN constant
-	{if (!get_preparse_state()) $$ = new simple_type_declaration_c($1, new simple_spec_init_c($3, $6, locf(@3), locl(@5)), locloc(@$));}
-| identifier ':' prev_declared_simple_type_name {library_element_symtable.insert($1, prev_declared_simple_type_name_token);} ASSIGN constant
-	{if (!get_preparse_state()) $$ = new simple_type_declaration_c($1, new simple_spec_init_c($3, $6, locf(@3), locl(@5)), locloc(@$));}
+  identifier ':' simple_specification           {parser->library_element_symtable.insert($1, prev_declared_simple_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new simple_type_declaration_c($1, $3, locloc(@$));}
+| identifier ':' elementary_type_name           {parser->library_element_symtable.insert($1, prev_declared_simple_type_name_token);} ASSIGN constant
+	{if (!parser->get_preparse_state()) $$ = new simple_type_declaration_c($1, new simple_spec_init_c($3, $6, locf(@3), locl(@5)), locloc(@$));}
+| identifier ':' prev_declared_simple_type_name {parser->library_element_symtable.insert($1, prev_declared_simple_type_name_token);} ASSIGN constant
+	{if (!parser->get_preparse_state()) $$ = new simple_type_declaration_c($1, new simple_spec_init_c($3, $6, locf(@3), locl(@5)), locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_simple_type_name ':' simple_spec_init
@@ -2497,13 +2486,13 @@ simple_type_declaration:
 */
 /* ERROR_CHECK_BEGIN */
 | error ':' simple_spec_init
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid name defined for data type declaration.");yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid name defined for data type declaration.");yyerrok;}
 | identifier simple_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in simple type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in simple type declaration."); yynerrs++;}
 | identifier ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in data type declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in data type declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in data type declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in data type declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2527,19 +2516,19 @@ simple_spec_init:
 	{$$ = new simple_spec_init_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | elementary_type_name constant
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in specification with initialization."); yynerrs++;}
 | prev_declared_simple_type_name constant
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in specification with initialization."); yynerrs++;}
 | elementary_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 | prev_declared_simple_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2572,17 +2561,17 @@ subrange_type_declaration:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' subrange_spec_init	{library_element_symtable.insert($1, prev_declared_subrange_type_name_token);}
-	{if (!get_preparse_state()) $$ = new subrange_type_declaration_c($1, $3, locloc(@$));}  
+  identifier ':' subrange_spec_init	{parser->library_element_symtable.insert($1, prev_declared_subrange_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new subrange_type_declaration_c($1, $3, locloc(@$));}  
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_subrange_type_name ':' subrange_spec_init
 	{$$ = new subrange_type_declaration_c(new identifier_c(((token_c *)$1)->value, locloc(@1)), $3, locloc(@$));} // change the derived_datatype_identifier_c into an identifier_c, as it will be taking the place of an identifier!
 /* ERROR_CHECK_BEGIN */
 | error ':' subrange_spec_init
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid name defined for subrange type declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid name defined for subrange type declaration."); yyerrok;}
 | identifier subrange_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in subrange type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in subrange type declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2593,11 +2582,11 @@ subrange_spec_init:
 	{$$ = new subrange_spec_init_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | subrange_specification signed_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in subrange specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in subrange specification with initialization."); yynerrs++;}
 | subrange_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in subrange specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in subrange specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in subrange specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in subrange specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2610,11 +2599,11 @@ subrange_specification:
   {$$ = new subrange_specification_c($1, NULL, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | integer_type_name '(' ')'
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange specification."); yynerrs++;}
 | integer_type_name '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid subrange defined in subrange specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid subrange defined in subrange specification."); yyerrok;}
 | integer_type_name '(' subrange error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing after subrange defined in subrange specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing after subrange defined in subrange specification."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2625,32 +2614,32 @@ subrange_with_var:
 	{$$ = new subrange_c($1, $3, locloc(@$));}
 | any_identifier DOTDOT signed_integer
 	{$$ = new subrange_c(new symbolic_constant_c($1, locloc(@1)), $3, locloc(@$));
-	 if (!runtime_options.nonliteral_in_array_size) {
-	   print_err_msg(locf(@1), locl(@1), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
+	 if (!parser->runtime_options.nonliteral_in_array_size) {
+	   parser->print_err_msg(locf(@1), locl(@1), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
 	   yynerrs++;
 	 }
 	}
 | signed_integer DOTDOT any_identifier
 	{$$ = new subrange_c($1, new symbolic_constant_c($3, locloc(@3)), locloc(@$));
-	 if (!runtime_options.nonliteral_in_array_size) {
-	   print_err_msg(locf(@3), locl(@3), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
+	 if (!parser->runtime_options.nonliteral_in_array_size) {
+	   parser->print_err_msg(locf(@3), locl(@3), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
 	   yynerrs++;
 	 }
 	}
 | any_identifier DOTDOT any_identifier
 	{$$ = new subrange_c(new symbolic_constant_c($1, locloc(@1)), new symbolic_constant_c($3, locloc(@3)), locloc(@$));
-	 if (!runtime_options.nonliteral_in_array_size) {
-	   print_err_msg(locf(@$), locl(@$), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
+	 if (!parser->runtime_options.nonliteral_in_array_size) {
+	   parser->print_err_msg(locf(@$), locl(@$), "Use of variables in array size limits is not allowed in IEC 61131-3 (use -a option to activate support for this non-standard feature)."); 
 	   yynerrs++;
 	 }
 	}
 /* ERROR_CHECK_BEGIN */
 | signed_integer signed_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
 | signed_integer DOTDOT error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2662,11 +2651,11 @@ subrange:
 	{$$ = new subrange_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | signed_integer signed_integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'..' missing between bounds in subrange definition."); yynerrs++;}
 | signed_integer DOTDOT error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for upper bound in subrange definition.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for upper bound in subrange definition."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2675,7 +2664,7 @@ subrange:
 
 enumerated_type_declaration:
 /*  enumerated_type_name ':' enumerated_spec_init */
-/* NOTE: The 'identifier' used for the name of the new enumerated type is inserted early into the library_element_symtable so it may be used
+/* NOTE: The 'identifier' used for the name of the new enumerated type is inserted early into the parser->library_element_symtable so it may be used
  *       in defining the default initial value of this type, using the fully qualified enumerated constant syntax: type_name#enum_value
  *       In other words, this allows us to correclty parse the following IEC 61131-3 code:
  *           TYPE enum_t : (x1, x2, x3) := enum_t#x3; END_TYPE
@@ -2686,34 +2675,34 @@ enumerated_type_declaration:
  *       
  *       If it were not for the above, we could use the rule
  *           identifier ':' enumerated_spec_init
- *       and include the library_element_symtable.insert(...) code in the rule actions!
+ *       and include the parser->library_element_symtable.insert(...) code in the rule actions!
  */
 /* PRE_PARSING or SINGLE_PHASE_PARSING */
 /*  The following rules will be run either by:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' enumerated_specification {library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);}
-	{if (!get_preparse_state()) $$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, NULL, locloc(@3)), locloc(@$));}
-| identifier ':' enumerated_specification {library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);} ASSIGN enumerated_value
-	{if (!get_preparse_state()) $$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, $6, locf(@3), locl(@6)), locloc(@$));}
+  identifier ':' enumerated_specification {parser->library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, NULL, locloc(@3)), locloc(@$));}
+| identifier ':' enumerated_specification {parser->library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);} ASSIGN enumerated_value
+	{if (!parser->get_preparse_state()) $$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, $6, locf(@3), locl(@6)), locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
-/* Since the enumerated type name is placed in the library_element_symtable during preparsing, we can now safely use the single rule: */
+/* Since the enumerated type name is placed in the parser->library_element_symtable during preparsing, we can now safely use the single rule: */
 | prev_declared_enumerated_type_name ':' enumerated_spec_init 
 	{$$ = new enumerated_type_declaration_c(new identifier_c(((token_c *)$1)->value, locloc(@1)), $3, locloc(@$));} // change the derived_datatype_identifier_c into an identifier_c, as it will be taking the place of an identifier!
   /* These two rules are equivalent to the above rule */
 /*
-| prev_declared_enumerated_type_name ':' enumerated_specification {library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);}
+| prev_declared_enumerated_type_name ':' enumerated_specification {parser->library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);}
 	{$$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, NULL, locloc(@3)), locloc(@$));}
-| prev_declared_enumerated_type_name ':' enumerated_specification {library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);} ASSIGN enumerated_value
+| prev_declared_enumerated_type_name ':' enumerated_specification {parser->library_element_symtable.insert($1, prev_declared_enumerated_type_name_token);} ASSIGN enumerated_value
 	{$$ = new enumerated_type_declaration_c($1, new enumerated_spec_init_c($3, $6, locf(@3), locl(@6)), locloc(@$));}
 */
 /* ERROR_CHECK_BEGIN */
 | error ':' enumerated_spec_init
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid name defined for enumerated type declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid name defined for enumerated type declaration."); yyerrok;}
 | identifier enumerated_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in enumerated type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in enumerated type declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2725,11 +2714,11 @@ enumerated_spec_init:
 	{$$ = new enumerated_spec_init_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | enumerated_specification enumerated_value
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in enumerated specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in enumerated specification with initialization."); yynerrs++;}
 | enumerated_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value in enumerated specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined in enumerated specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value in enumerated specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2741,11 +2730,11 @@ enumerated_specification:
 | prev_declared_enumerated_type_name
 /* ERROR_CHECK_BEGIN */
 | '(' ')'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no enumerated value list defined in enumerated specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no enumerated value list defined in enumerated specification."); yynerrs++;}
 | '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid enumerated value list defined in enumerated specification.");yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid enumerated value list defined in enumerated specification.");yyerrok;}
 | '(' enumerated_value_list error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing at the end of enumerated specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing at the end of enumerated specification."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2757,11 +2746,11 @@ enumerated_value_list:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | enumerated_value_list enumerated_value
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in enumerated value list.");}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in enumerated value list.");}
 | enumerated_value_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in enumerated value list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value in enumerated value list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined in enumerated value list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value in enumerated value list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2775,11 +2764,11 @@ enumerated_value:
 	{$$ = new enumerated_value_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | prev_declared_enumerated_type_name any_identifier
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'#' missing between enumerated type name and value in enumerated literal."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'#' missing between enumerated type name and value in enumerated literal."); yynerrs++;}
 | prev_declared_enumerated_type_name '#' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for enumerated literal.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for enumerated literal."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for enumerated literal.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for enumerated literal."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2801,15 +2790,15 @@ array_type_declaration:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' array_spec_init   {library_element_symtable.insert($1, prev_declared_array_type_name_token);}
-	{if (!get_preparse_state()) $$ = new array_type_declaration_c($1, $3, locloc(@$));}
+  identifier ':' array_spec_init   {parser->library_element_symtable.insert($1, prev_declared_array_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new array_type_declaration_c($1, $3, locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_array_type_name ':' array_spec_init
 	{$$ = new array_type_declaration_c(new identifier_c(((token_c *)$1)->value, locloc(@1)), $3, locloc(@$));} // change the derived_datatype_identifier_c into an identifier_c, as it will be taking the place of an identifier!
 /* ERROR_CHECK_BEGIN */
 | identifier array_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in array type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in array type declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2820,11 +2809,11 @@ array_spec_init:
 	{$$ = new array_spec_init_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | array_specification array_initialization
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in array specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in array specification with initialization."); yynerrs++;}
 | array_specification ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in array specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in array specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in array specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in array specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2848,29 +2837,29 @@ array_specification:
 	 */
 	{$$ = new array_specification_c($3, $6, locloc(@$));
 	 if (!allow_ref_to_in_derived_datatypes) {
-	   print_err_msg(locf(@$), locl(@$), "REF_TO may not be used in an ARRAY specification (use -R option to activate support for this non-standard syntax)."); 
+	   parser->print_err_msg(locf(@$), locl(@$), "REF_TO may not be used in an ARRAY specification (use -R option to activate support for this non-standard syntax)."); 
 	   yynerrs++;
 	 }
 	}
 /* ERROR_CHECK_BEGIN */
 | ARRAY array_subrange_list ']' OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'[' missing before subrange list in array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'[' missing before subrange list in array specification."); yynerrs++;}
 | ARRAY '[' ']' OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no subrange list defined in array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no subrange list defined in array specification."); yynerrs++;}
 | ARRAY '[' error ']' OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid subrange list defined in array specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid subrange list defined in array specification."); yyerrok;}
 | ARRAY OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no subrange list defined in array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no subrange list defined in array specification."); yynerrs++;}
 | ARRAY error OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid subrange list defined in array specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid subrange list defined in array specification."); yyerrok;}
 | ARRAY '[' array_subrange_list OF non_generic_type_name
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "']' missing after subrange list in array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "']' missing after subrange list in array specification."); yynerrs++;}
 | ARRAY '[' array_subrange_list ']' non_generic_type_name
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "'OF' missing between subrange list and item type name in array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "'OF' missing between subrange list and item type name in array specification."); yynerrs++;}
 | ARRAY '[' array_subrange_list ']' OF error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no item data type defined in array specification.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid item data type in array specification."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no item data type defined in array specification.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid item data type in array specification."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2885,11 +2874,11 @@ array_subrange_list:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | array_subrange_list subrange
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in subrange list."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in subrange list."); yynerrs++;}
 | array_subrange_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid subrange in subrange list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no subrange defined in subrange list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid subrange in subrange list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -2901,11 +2890,11 @@ array_initialization:
 	{$$ = $2;}
 /* ERROR_CHECK_BEGIN */
 | '[' ']'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no initial values list defined in array initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no initial values list defined in array initialization."); yynerrs++;}
 | '[' error ']'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid initial values list defined in array initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid initial values list defined in array initialization."); yyerrok;}
 | '[' array_initial_elements_list error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "']' missing at the end of array initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "']' missing at the end of array initialization."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2923,8 +2912,8 @@ array_initial_elements_list:
 /*
 | array_initial_elements_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no array initial value in array initial values list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid array initial value in array initial values list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no array initial value in array initial values list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid array initial value in array initial values list."); yyclearin;}
 	 yyerrok;
 	}
 */
@@ -2940,9 +2929,9 @@ array_initial_elements:
 	{$$ = new array_initial_elements_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | integer '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid array initial value in array initial values list."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid array initial value in array initial values list."); yyerrok;}
 | integer '(' array_initial_element error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing at the end of array initial value in array initial values list."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing at the end of array initial value in array initial values list."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2963,15 +2952,15 @@ structure_type_declaration:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' structure_specification  {library_element_symtable.insert($1, prev_declared_structure_type_name_token);}
-	{if (!get_preparse_state()) $$ = new structure_type_declaration_c($1, $3, locloc(@$));}
+  identifier ':' structure_specification  {parser->library_element_symtable.insert($1, prev_declared_structure_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new structure_type_declaration_c($1, $3, locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_structure_type_name ':' structure_specification
 	{$$ = new structure_type_declaration_c(new identifier_c(((token_c *)$1)->value, locloc(@1)), $3, locloc(@$));} // change the derived_datatype_identifier_c into an identifier_c, as it will be taking the place of an identifier!
 /* ERROR_CHECK_BEGIN */
 | identifier structure_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in structure type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between data type name and specification in structure type declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -2989,11 +2978,11 @@ initialized_structure:
 	{$$ = new initialized_structure_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | prev_declared_structure_type_name structure_initialization
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in structure specification with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in structure specification with initialization."); yynerrs++;}
 | prev_declared_structure_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined in structure specification with initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value in structure specification with initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined in structure specification with initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value in structure specification with initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3005,13 +2994,13 @@ structure_declaration:
 	{$$ = $2;}
 /* ERROR_CHECK_BEGIN */
 | STRUCT END_STRUCT
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no structure element declared in structure type declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no structure element declared in structure type declaration."); yynerrs++;}
 | STRUCT error structure_element_declaration_list END_STRUCT
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'STRUCT' in structure type declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'STRUCT' in structure type declaration."); yyerrok;}
 | STRUCT structure_element_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed structure type declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed structure type declaration."); yyerrok;}
 | STRUCT error END_STRUCT
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in structure type declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in structure type declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3023,15 +3012,15 @@ structure_element_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new structure_element_declaration_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid structure element declaration."); yyerrok;}
+	{$$ = new structure_element_declaration_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid structure element declaration."); yyerrok;}
 | structure_element_declaration error
-	{$$ = new structure_element_declaration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of structure element declaration."); yyerrok;}
+	{$$ = new structure_element_declaration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of structure element declaration."); yyerrok;}
 | structure_element_declaration_list structure_element_declaration error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of structure element declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of structure element declaration."); yyerrok;}
 | structure_element_declaration_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid structure element declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid structure element declaration."); yyerrok;}
 | structure_element_declaration_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after structure element declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after structure element declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3050,25 +3039,25 @@ structure_element_declaration:
 | structure_element_name ':' ref_spec_init                              /* non standard extension: Allow use of struct elements storing REF_TO datatypes (either using REF_TO or a previosuly declared ref type) */
 	{ $$ = new structure_element_declaration_c($1, $3, locloc(@$));
 	  if (!allow_ref_to_in_derived_datatypes) {
-	    print_err_msg(locf(@$), locl(@$), "REF_TO and reference datatypes may not be used in a STRUCT element (use -R option to activate support for this non-standard syntax)."); 
+	    parser->print_err_msg(locf(@$), locl(@$), "REF_TO and reference datatypes may not be used in a STRUCT element (use -R option to activate support for this non-standard syntax)."); 
 	    yynerrs++;
 	  }
 	}
 /* ERROR_CHECK_BEGIN */
 | structure_element_name simple_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and simple specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and simple specification."); yynerrs++;}
 | structure_element_name subrange_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and subrange specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and subrange specification."); yynerrs++;}
 | structure_element_name enumerated_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and enumerated specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and enumerated specification."); yynerrs++;}
 | structure_element_name array_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and array specification."); yynerrs++;}
 | structure_element_name initialized_structure
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and structure specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between structure element name and structure specification."); yynerrs++;}
 | structure_element_name ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in structure element declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in structure element declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in structure element declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in structure element declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3083,9 +3072,9 @@ structure_initialization:
 	{$$ = $2;}
 /* ERROR_CHECK_BEGIN */
 | '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid structure element initialization list in structure initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid structure element initialization list in structure initialization."); yyerrok;}
 | '(' structure_element_initialization_list error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "expecting ')' at the end of structure element initialization list in structure initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "expecting ')' at the end of structure element initialization list in structure initialization."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3101,11 +3090,11 @@ structure_element_initialization_list:
  */
 /*
 | structure_element_initialization_list structure_element_initialization
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in structure element initialization list in structure initialization."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in structure element initialization list in structure initialization."); yynerrs++;}
 | structure_element_initialization_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no structure element initialization defined in structure initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid structure element initialization in structure initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no structure element initialization defined in structure initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid structure element initialization in structure initialization."); yyclearin;}
 	 yyerrok;
 	}
 */
@@ -3124,17 +3113,17 @@ structure_element_initialization:
 	{$$ = new structure_element_initialization_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | structure_element_name constant
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in structure element initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in structure element initialization."); yynerrs++;}
 | structure_element_name enumerated_value
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in enumerated structure element initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in enumerated structure element initialization."); yynerrs++;}
 | structure_element_name array_initialization
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in array structure element initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in array structure element initialization."); yynerrs++;}
 | structure_element_name structure_initialization
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing in structured structure element initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing in structured structure element initialization."); yynerrs++;}
 | structure_element_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in structured structure element initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in structured structure element initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in structured structure element initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in structured structure element initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3155,8 +3144,8 @@ string_type_declaration:
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' elementary_string_type_name string_type_declaration_size string_type_declaration_init	{library_element_symtable.insert($1, prev_declared_string_type_name_token);}
-	{if (!get_preparse_state()) $$ = new string_type_declaration_c($1, $3, $4, $5, locloc(@$));}
+  identifier ':' elementary_string_type_name string_type_declaration_size string_type_declaration_init	{parser->library_element_symtable.insert($1, prev_declared_string_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new string_type_declaration_c($1, $3, $4, $5, locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_string_type_name ':' elementary_string_type_name string_type_declaration_size string_type_declaration_init
@@ -3224,7 +3213,7 @@ ref_spec_non_recursive: /* helper symbol, used to remove a reduce/reduce conflic
 | REF_TO ANY
 	{$$ = new ref_spec_c(new generic_type_any_c(locloc(@2)), locloc(@$));
 	 if (!allow_ref_to_any) {
-	   print_err_msg(locf(@$), locl(@$), "REF_TO ANY datatypes are not allowed (use -R option to activate support for this non-standard syntax)."); 
+	   parser->print_err_msg(locf(@$), locl(@$), "REF_TO ANY datatypes are not allowed (use -R option to activate support for this non-standard syntax)."); 
 	   yynerrs++;
 	 }
 	}
@@ -3290,8 +3279,8 @@ ref_type_decl:  /* defined in IEC 61131-3 v3 */
  *      - the pre_parsing phase of two phase parsing (when preparsing command line option is chosen).
  *      - the standard single phase parser (when preparsing command line option is not chosen).
  */
-  identifier ':' ref_spec_init  {library_element_symtable.insert($1, prev_declared_ref_type_name_token);}
-	{if (!get_preparse_state()) $$ = new ref_type_decl_c($1, $3, locloc(@$));}
+  identifier ':' ref_spec_init  {parser->library_element_symtable.insert($1, prev_declared_ref_type_name_token);}
+	{if (!parser->get_preparse_state()) $$ = new ref_type_decl_c($1, $3, locloc(@$));}
 /* POST_PARSING */
 /*  These rules will be run after the preparser phase of two phase parsing has finished (only gets to execute if preparsing command line option is chosen). */
 | prev_declared_ref_type_name ':' ref_spec_init
@@ -3383,7 +3372,7 @@ symbolic_variable:
 	/* Dereferencing operator defined in IEC 61131-3 v3. However, implemented here differently then how it is defined in the standard! See following note for explanation! */
 	{$$ = new deref_operator_c($1, locloc(@$));
 	 if (!allow_ref_dereferencing) {
-	   print_err_msg(locf(@$), locl(@$), "Derefencing REF_TO datatypes with '^' is not allowed (use -r option to activate support for this IEC 61131-3 v3 feature)."); 
+	   parser->print_err_msg(locf(@$), locl(@$), "Derefencing REF_TO datatypes with '^' is not allowed (use -r option to activate support for this IEC 61131-3 v3 feature)."); 
 	   yynerrs++;
 	 }
 }
@@ -3539,29 +3528,29 @@ input_declarations:
 	{$$ = new input_declarations_c(new non_retain_option_c(locloc(@2)), $3, new explicit_definition_c(), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_INPUT END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in input variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in input variable(s) declaration."); yynerrs++;}
 | VAR_INPUT RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in retentive input variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in retentive input variable(s) declaration."); yynerrs++;}
 | VAR_INPUT NON_RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive input variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive input variable(s) declaration."); yynerrs++;}
 | VAR_INPUT error input_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_INPUT' in input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_INPUT' in input variable(s) declaration."); yyerrok;}
 | VAR_INPUT RETAIN error input_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive input variable(s) declaration."); yyerrok;}
 | VAR_INPUT NON_RETAIN error input_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive input variable(s) declaration."); yyerrok;}
 | VAR_INPUT input_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed input variable(s) declaration."); yyerrok;}
 | VAR_INPUT RETAIN input_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed retentive input variable(s) declaration."); yyerrok;}
 | VAR_INPUT NON_RETAIN input_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed non-retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed non-retentive input variable(s) declaration."); yyerrok;}
 | VAR_INPUT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in input variable(s) declaration."); yyerrok;}
 | VAR_INPUT RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in retentive input variable(s) declaration."); yyerrok;}
 | VAR_INPUT NON_RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in non-retentive input variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in non-retentive input variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3573,15 +3562,15 @@ input_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new input_declaration_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid input variable(s) declaration."); yyerrok;}
+	{$$ = new input_declaration_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid input variable(s) declaration."); yyerrok;}
 | input_declaration error
-	{$$ = new input_declaration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of input variable(s) declaration."); yyerrok;}
+	{$$ = new input_declaration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of input variable(s) declaration."); yyerrok;}
 | input_declaration_list input_declaration error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of input variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of input variable(s) declaration."); yyerrok;}
 | input_declaration_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid input variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid input variable(s) declaration."); yyerrok;}
 | input_declaration_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after input variable(s) declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after input variable(s) declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3605,17 +3594,17 @@ edge_declaration:
 	{$$ = new edge_declaration_c(new falling_edge_option_c(locloc(@3)), $1, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list BOOL R_EDGE
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in edge declaration."); yynerrs++;}
 | var1_list BOOL F_EDGE
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in edge declaration."); yynerrs++;}
 | var1_list ':' BOOL R_EDGE F_EDGE
-	{$$ = NULL; print_err_msg(locl(@5), locf(@5), "'R_EDGE' and 'F_EDGE' can't be present at the same time in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@5), locf(@5), "'R_EDGE' and 'F_EDGE' can't be present at the same time in edge declaration."); yynerrs++;}
 | var1_list ':' BOOL F_EDGE R_EDGE
-	{$$ = NULL; print_err_msg(locl(@5), locf(@5), "'R_EDGE' and 'F_EDGE' can't be present at the same time in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@5), locf(@5), "'R_EDGE' and 'F_EDGE' can't be present at the same time in edge declaration."); yynerrs++;}
 | var1_list ':' R_EDGE
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "'BOOL' missing in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'BOOL' missing in edge declaration."); yynerrs++;}
 | var1_list ':' F_EDGE
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "'BOOL' missing in edge declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'BOOL' missing in edge declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3635,17 +3624,17 @@ en_param_declaration:
   {$$ = new en_param_declaration_c($1, new simple_spec_init_c(new bool_type_name_c(locloc(@3)), $5, locf(@3), locl(@5)), new explicit_definition_c(), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | en_identifier BOOL ASSIGN boolean_literal
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in EN declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in EN declaration."); yynerrs++;}
 | en_identifier BOOL ASSIGN integer
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in EN declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in EN declaration."); yynerrs++;}
 | en_identifier ':' ASSIGN boolean_literal
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "'BOOL' missing in EN declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'BOOL' missing in EN declaration."); yynerrs++;}
 | en_identifier ':' ASSIGN integer
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "'BOOL' missing in EN declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'BOOL' missing in EN declaration."); yynerrs++;}
 | en_identifier ':' BOOL ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in EN declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in EN declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in EN declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in EN declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3673,15 +3662,15 @@ var1_init_decl:
 	{$$ = new var1_init_decl_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list simple_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and simple specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and simple specification."); yynerrs++;}
 | var1_list subrange_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and subrange specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and subrange specification."); yynerrs++;}
 | var1_list enumerated_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and enumerated specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and enumerated specification."); yynerrs++;}
 | var1_list ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3714,29 +3703,29 @@ var1_init_decl:
 var1_list:
   variable_name
 	{$$ = new var1_list_c(locloc(@$)); $$->add_element($1);
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | variable_name integer DOTDOT
 	{$$ = new var1_list_c(locloc(@$)); $$->add_element(new extensible_input_parameter_c($1, $2, locloc(@$)));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
-	 if (!allow_extensible_function_parameters) print_err_msg(locf(@1), locl(@2), "invalid syntax in variable name declaration.");
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 if (!allow_extensible_function_parameters) parser->print_err_msg(locf(@1), locl(@2), "invalid syntax in variable name declaration.");
 	}
  | var1_list ',' variable_name
 	{$$ = $1; $$->add_element($3);
-	 variable_name_symtable.insert($3, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($3, prev_declared_variable_name_token);
 	}
  | var1_list ',' variable_name integer DOTDOT
 	{$$ = $1; $$->add_element(new extensible_input_parameter_c($3, $4, locloc(@$)));
-	 variable_name_symtable.insert($3, prev_declared_variable_name_token);
-	 if (!allow_extensible_function_parameters) print_err_msg(locf(@1), locl(@2), "invalid syntax in variable name declaration.");
+	 parser->variable_name_symtable.insert($3, prev_declared_variable_name_token);
+	 if (!allow_extensible_function_parameters) parser->print_err_msg(locf(@1), locl(@2), "invalid syntax in variable name declaration.");
 	}
 /* ERROR_CHECK_BEGIN */
 | var1_list variable_name
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in variable list."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in variable list."); yynerrs++;}
 | var1_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable name defined in variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid variable name in variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no variable name defined in variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid variable name in variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3749,7 +3738,7 @@ array_var_init_decl:
 	{$$ = new array_var_init_decl_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list array_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and array specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3759,7 +3748,7 @@ structured_var_init_decl:
 	{$$ = new structured_var_init_decl_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list initialized_structure
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and structured specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and structured specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3778,13 +3767,13 @@ fb_name_decl:
 	{$$ = new fb_name_decl_c($1, new fb_spec_init_c($2, $4, locf(@2), locl(@4)), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | fb_name_list_with_colon ASSIGN structure_initialization
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block type name defined in function block declaration with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block type name defined in function block declaration with initialization."); yynerrs++;}
 | fb_name_list_with_colon function_block_type_name structure_initialization
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':=' missing in function block declaration with initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':=' missing in function block declaration with initialization."); yynerrs++;}
 | fb_name_list_with_colon function_block_type_name ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no initialization defined in function block declaration.");}
-	 else {print_err_msg(locf(@4), locl(@4), "invalid initialization in function block declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@3), locf(@4), "no initialization defined in function block declaration.");}
+	 else {parser->print_err_msg(locf(@4), locl(@4), "invalid initialization in function block declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3807,12 +3796,12 @@ fb_name_list:
  (*  fb_name *)
   identifier
 	{$$ = new fb_name_list_c($1);
-	 variable_name_symtable.insert($1, prev_declared_fb_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_fb_name_token);
 	}
 (* | fb_name_list ',' fb_name *)
 | fb_name_list ',' identifier
 	{$$ = $1; $$->add_element($3);
-	 variable_name_symtable.insert($3, prev_declared_fb_name_token);
+	 parser->variable_name_symtable.insert($3, prev_declared_fb_name_token);
 	}
 ;
 */
@@ -3829,7 +3818,7 @@ fb_name_list_with_colon:
 	  * the variable name symbol table from prev_declared_variable_name_token
 	  * to prev_declared_fb_name_token
 	  */
-	 FOR_EACH_ELEMENT(elem, $$, {variable_name_symtable.set(elem, prev_declared_fb_name_token);});
+	 FOR_EACH_ELEMENT(elem, $$, {parser->variable_name_symtable.set(elem, prev_declared_fb_name_token);});
 	}
 ;
 
@@ -3852,29 +3841,29 @@ output_declarations:
 	{$$ = new output_declarations_c(new non_retain_option_c(locloc(@2)), $3, new explicit_definition_c(), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_OUTPUT END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in output variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in output variable(s) declaration."); yynerrs++;}
 | VAR_OUTPUT RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in retentive output variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in retentive output variable(s) declaration."); yynerrs++;}
 | VAR_OUTPUT NON_RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive output variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive output variable(s) declaration."); yynerrs++;}
 | VAR_OUTPUT error var_output_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_OUPUT' in output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_OUPUT' in output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT RETAIN error var_output_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT NON_RETAIN error var_output_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT var_output_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT RETAIN var_output_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed retentive output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT NON_RETAIN var_output_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed non-retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed non-retentive output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in retentive output variable(s) declaration."); yyerrok;}
 | VAR_OUTPUT NON_RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in non-retentive output variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in non-retentive output variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3898,9 +3887,9 @@ var_output_init_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | var_output_init_decl_list var_output_init_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
 | var_output_init_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3921,11 +3910,11 @@ eno_param_declaration:
   {$$ = new eno_param_declaration_c($1, new bool_type_name_c(locloc(@$)), new explicit_definition_c(), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | eno_identifier BOOL
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in ENO declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and specification in ENO declaration."); yynerrs++;}
 | eno_identifier ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in ENO declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in ENO declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in ENO declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in ENO declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -3937,13 +3926,13 @@ input_output_declarations:
 	{$$ = new input_output_declarations_c($2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_IN_OUT END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in in_out variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in in_out variable(s) declaration."); yynerrs++;}
 | VAR_IN_OUT error var_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_IN_OUT' in in_out variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_IN_OUT' in in_out variable(s) declaration."); yyerrok;}
 | VAR_IN_OUT var_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed in_out variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed in_out variable(s) declaration."); yyerrok;}
 | VAR_IN_OUT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in in_out variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in in_out variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3957,15 +3946,15 @@ var_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new var_declaration_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid variable(s) declaration."); yyerrok;}
+	{$$ = new var_declaration_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid variable(s) declaration."); yyerrok;}
 | var_declaration error
-	{$$ = new var_declaration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of variable(s) declaration."); yyerrok;}
+	{$$ = new var_declaration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of variable(s) declaration."); yyerrok;}
 | var_declaration_list var_declaration error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
 | var_declaration_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
 | var_declaration_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after variable(s) declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after variable(s) declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -3994,11 +3983,11 @@ var1_declaration:
 	{$$ = new var1_init_decl_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list simple_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and simple specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and simple specification."); yynerrs++;}
 | var1_list subrange_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and subrange specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and subrange specification."); yynerrs++;}
 | var1_list enumerated_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and enumerated specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and enumerated specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4009,7 +3998,7 @@ array_var_declaration:
 	{$$ = new array_var_declaration_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list array_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and array specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4018,7 +4007,7 @@ structured_var_declaration:
 	{$$ = new structured_var_declaration_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list prev_declared_structure_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and structured specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and structured specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4030,21 +4019,21 @@ var_declarations:
 	{$$ = new var_declarations_c(new constant_option_c(locloc(@2)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in variable(s) declaration."); yynerrs++;}
 | VAR CONSTANT END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in constant variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in constant variable(s) declaration."); yynerrs++;}
 | VAR error var_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@3), "unexpected token after 'VAR' in variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "unexpected token after 'VAR' in variable(s) declaration."); yyerrok;}
 | VAR CONSTANT error var_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant variable(s) declaration."); yyerrok;}
 | VAR var_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed variable(s) declaration."); yyerrok;}
 | VAR CONSTANT var_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed constant variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed constant variable(s) declaration."); yyerrok;}
 | VAR error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in variable(s) declaration."); yyerrok;}
 | VAR CONSTANT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in constant variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in constant variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4054,13 +4043,13 @@ retentive_var_declarations:
 	{$$ = new retentive_var_declarations_c($3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in retentive variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in retentive variable(s) declaration."); yynerrs++;}
 | VAR RETAIN error var_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive variable(s) declaration."); yyerrok;}
 | VAR RETAIN var_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed retentive variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed retentive variable(s) declaration."); yyerrok;}
 | VAR RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in retentive variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in retentive variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4076,25 +4065,25 @@ located_var_declarations:
 	{$$ = new located_var_declarations_c(new non_retain_option_c(locloc(@2)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR NON_RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive located variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in non-retentive located variable(s) declaration."); yynerrs++;}
 | VAR error located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in located variable(s) declaration."); yyerrok;}
 | VAR CONSTANT error located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant located variable(s) declaration."); yyerrok;}
 | VAR RETAIN error located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive located variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN error located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive located variable(s) declaration."); yyerrok;}
 | VAR located_var_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed located variable(s) declaration."); yyerrok;}
 | VAR CONSTANT located_var_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed constant located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed constant located variable(s) declaration."); yyerrok;}
 | VAR RETAIN located_var_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed retentive located variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN located_var_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed non-retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed non-retentive located variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in non retentive variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in non retentive variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4107,15 +4096,15 @@ located_var_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new located_var_decl_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid located variable declaration."); yyerrok;}
+	{$$ = new located_var_decl_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid located variable declaration."); yyerrok;}
 | located_var_decl error
-	{$$ = new located_var_decl_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of located variable declaration."); yyerrok;}
+	{$$ = new located_var_decl_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of located variable declaration."); yyerrok;}
 | located_var_decl_list located_var_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of located variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of located variable declaration."); yyerrok;}
 | located_var_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid located variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid located variable declaration."); yyerrok;}
 | located_var_decl_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after located variable declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after located variable declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4123,25 +4112,25 @@ located_var_decl_list:
 located_var_decl:
   variable_name location ':' located_var_spec_init
 	{$$ = new located_var_decl_c($1, $2, $4, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | location ':' located_var_spec_init
 	{$$ = new located_var_decl_c(NULL, $1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | variable_name location located_var_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between located variable location and specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between located variable location and specification."); yynerrs++;}
 | location located_var_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between located variable location and specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between located variable location and specification."); yynerrs++;}
 | variable_name location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 | location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in located variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4157,21 +4146,21 @@ external_var_declarations:
 	{$$ = new external_var_declarations_c(new constant_option_c(locloc(@2)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_EXTERNAL END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in external variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in external variable(s) declaration."); yynerrs++;}
 | VAR_EXTERNAL CONSTANT END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in constant external variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in constant external variable(s) declaration."); yynerrs++;}
 | VAR_EXTERNAL error external_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_EXTERNAL' in external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_EXTERNAL' in external variable(s) declaration."); yyerrok;}
 | VAR_EXTERNAL CONSTANT error external_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant external variable(s) declaration."); yyerrok;}
 | VAR_EXTERNAL external_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed external variable(s) declaration."); yyerrok;}
 | VAR_EXTERNAL CONSTANT external_declaration_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed constant external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed constant external variable(s) declaration."); yyerrok;}
 | VAR_EXTERNAL error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in external variable(s) declaration."); yyerrok;}
 | VAR_EXTERNAL CONSTANT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in constant external variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in constant external variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4183,15 +4172,15 @@ external_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new external_declaration_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid external variable declaration."); yyerrok;}
+	{$$ = new external_declaration_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid external variable declaration."); yyerrok;}
 | external_declaration error
-	{$$ = new external_declaration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of external variable declaration."); yyerrok;}
+	{$$ = new external_declaration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of external variable declaration."); yyerrok;}
 | external_declaration_list external_declaration error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of external variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of external variable declaration."); yyerrok;}
 | external_declaration_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid external variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid external variable declaration."); yyerrok;}
 | external_declaration_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after external variable declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after external variable declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4211,49 +4200,49 @@ external_declaration_list:
 external_declaration:
   global_var_name ':' simple_specification
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | global_var_name ':' subrange_specification
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | global_var_name ':' enumerated_specification
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | global_var_name ':' array_specification
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | global_var_name ':' prev_declared_structure_type_name
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_variable_name_token);
 	}
 | global_var_name ':' function_block_type_name
 	{$$ = new external_declaration_c($1, new fb_spec_init_c($3, NULL, locloc(@3)), locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_fb_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_fb_name_token);
 	}
 | global_var_name ':' ref_spec /* defined in IEC 61131-3 v3   (REF_TO ...)*/
 	{$$ = new external_declaration_c($1, $3, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_fb_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_fb_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | global_var_name simple_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and simple specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and simple specification."); yynerrs++;}
 | global_var_name subrange_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and subrange specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and subrange specification."); yynerrs++;}
 | global_var_name enumerated_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and enumerated specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and enumerated specification."); yynerrs++;}
 | global_var_name array_specification
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and array specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and array specification."); yynerrs++;}
 | global_var_name prev_declared_structure_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and structured specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and structured specification."); yynerrs++;}
 | global_var_name function_block_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and function block type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between external variable name and function block type specification."); yynerrs++;}
 | global_var_name ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in external variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in external variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in external variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in external variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4272,29 +4261,29 @@ global_var_declarations:
 	{$$ = new global_var_declarations_c(new retain_option_c(locloc(@2)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_GLOBAL END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in global variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in global variable(s) declaration."); yynerrs++;}
 | VAR_GLOBAL CONSTANT END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in constant global variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in constant global variable(s) declaration."); yynerrs++;}
 | VAR_GLOBAL RETAIN END_VAR
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable declared in retentive global variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable declared in retentive global variable(s) declaration."); yynerrs++;}
 | VAR_GLOBAL error global_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_GLOBAL' in global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_GLOBAL' in global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL CONSTANT error global_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL RETAIN error global_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL global_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed global variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL CONSTANT global_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed constant global variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed constant global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL RETAIN global_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed retentive global variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed retentive global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL CONSTANT error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in constant global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in constant global variable(s) declaration."); yyerrok;}
 | VAR_GLOBAL RETAIN error END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unknown error in constant global variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unknown error in constant global variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4307,15 +4296,15 @@ global_var_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new global_var_decl_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid global variable(s) declaration."); yyerrok;}
+	{$$ = new global_var_decl_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid global variable(s) declaration."); yyerrok;}
 | global_var_decl error
-	{$$ = new global_var_decl_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of global variable(s) declaration."); yyerrok;}
+	{$$ = new global_var_decl_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of global variable(s) declaration."); yyerrok;}
 | global_var_decl_list global_var_decl error
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "';' missing at end of global variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of global variable(s) declaration."); yyerrok;}
 | global_var_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid global variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid global variable(s) declaration."); yyerrok;}
 | global_var_decl_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after global variable(s) declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after global variable(s) declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4331,15 +4320,15 @@ global_var_decl:
 	{$$ = new global_var_decl_c($1, new fb_spec_init_c($3, NULL, locloc(@3)), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | global_var_list located_var_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between global variable list and type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between global variable list and type specification."); yynerrs++;}
 | global_var_name location located_var_spec_init
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between global variable specification and type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between global variable specification and type specification."); yynerrs++;}
 | global_var_spec function_block_type_name
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between global variable specification and function block type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between global variable specification and function block type specification."); yynerrs++;}
 | global_var_spec ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in global variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in global variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in global variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in global variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4352,7 +4341,7 @@ global_var_spec:
 	{$$ = new global_var_spec_c(NULL, $1, locloc(@$));}
 | global_var_name location
 	{$$ = new global_var_spec_c($1, $2, locloc(@$));
-	 variable_name_symtable.insert($1, prev_declared_global_var_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_global_var_name_token);
 	}
 ;
 
@@ -4372,13 +4361,13 @@ located_var_spec_init:
 location:
   AT direct_variable_token
 	{$$ = new location_c(new direct_variable_c($2, locloc(@$)), locloc(@$));
-	 direct_variable_symtable.insert($2, prev_declared_direct_variable_token);
+	 parser->direct_variable_symtable.insert($2, prev_declared_direct_variable_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | AT error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no location defined in location declaration.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid location in global location declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no location defined in location declaration.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid location in global location declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4389,19 +4378,19 @@ location:
 global_var_list:
   global_var_name
 	{$$ = new global_var_list_c(locloc(@$)); $$->add_element($1);
-	 variable_name_symtable.insert($1, prev_declared_global_var_name_token);
+	 parser->variable_name_symtable.insert($1, prev_declared_global_var_name_token);
 	}
 | global_var_list ',' global_var_name
 	{$$ = $1; $$->add_element($3);
-	 variable_name_symtable.insert($3, prev_declared_global_var_name_token);
+	 parser->variable_name_symtable.insert($3, prev_declared_global_var_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | global_var_list global_var_name
-	{$$ = new global_var_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "',' missing in global variable list."); yynerrs++;}
+	{$$ = new global_var_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "',' missing in global variable list."); yynerrs++;}
 | global_var_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable name defined in global variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid variable name in global variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no variable name defined in global variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid variable name in global variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4419,7 +4408,7 @@ single_byte_string_var_declaration:
 	{$$ = new single_byte_string_var_declaration_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list single_byte_string_spec
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and string type specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4469,21 +4458,21 @@ single_byte_string_spec:
 	{$$ = new single_byte_string_spec_c(new single_byte_limited_len_string_spec_c(new string_type_name_c(locloc(@1)), $3, locloc(@$)), $6, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | STRING '[' error ']'
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid length value for limited string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid length value for limited string type specification."); yyerrok;}
 | STRING '[' error ']' ASSIGN single_byte_character_string
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid length value for limited string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid length value for limited string type specification."); yyerrok;}
 | STRING '[' ']'
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "missing length value for limited string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "missing length value for limited string type specification."); yynerrs++;}
 | STRING '[' ']' ASSIGN single_byte_character_string
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "missing length value for limited string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "missing length value for limited string type specification."); yynerrs++;}
 | STRING '[' integer error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "expecting ']' after length definition for limited string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "expecting ']' after length definition for limited string type specification."); yyerrok;}
 | STRING '[' integer ']' single_byte_character_string
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "':=' missing before limited string type initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "':=' missing before limited string type initialization."); yynerrs++;}
 | STRING '[' integer ']' ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@5), locf(@6), "no initial value defined in limited string type initialization.");}
-	 else {print_err_msg(locf(@6), locl(@6), "invalid initial value in limited string type initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@5), locf(@6), "no initial value defined in limited string type initialization.");}
+	 else {parser->print_err_msg(locf(@6), locl(@6), "invalid initial value in limited string type initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4495,7 +4484,7 @@ double_byte_string_var_declaration:
 	{$$ = new double_byte_string_var_declaration_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | var1_list double_byte_string_spec
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between variable list and double byte string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between variable list and double byte string type specification."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4514,21 +4503,21 @@ double_byte_string_spec:
 	{$$ = new double_byte_string_spec_c(new double_byte_limited_len_string_spec_c(new wstring_type_name_c(locloc(@1)), $3, locloc(@$)), $6, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | WSTRING '[' error ']'
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid length value for limited double byte string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid length value for limited double byte string type specification."); yyerrok;}
 | WSTRING '[' error ']' ASSIGN single_byte_character_string
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid length value for limited double byte string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid length value for limited double byte string type specification."); yyerrok;}
 | WSTRING '[' ']'
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "missing length value for limited double byte string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "missing length value for limited double byte string type specification."); yynerrs++;}
 | WSTRING '[' ']' ASSIGN single_byte_character_string
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "missing length value for limited double byte string type specification."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "missing length value for limited double byte string type specification."); yynerrs++;}
 | WSTRING '[' integer error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "expecting ']' after length definition for limited double byte string type specification."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "expecting ']' after length definition for limited double byte string type specification."); yyerrok;}
 | WSTRING '[' integer ']' single_byte_character_string
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "':=' missing before limited double byte string type initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "':=' missing before limited double byte string type initialization."); yynerrs++;}
 | WSTRING '[' integer ']' ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@5), locf(@6), "no initial value defined double byte in limited string type initialization.");}
-	 else {print_err_msg(locf(@6), locl(@6), "invalid initial value in limited double byte string type initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@5), locf(@6), "no initial value defined double byte in limited string type initialization.");}
+	 else {parser->print_err_msg(locf(@6), locl(@6), "invalid initial value in limited double byte string type initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4545,17 +4534,17 @@ incompl_located_var_declarations:
 	{$$ = new incompl_located_var_declarations_c(new non_retain_option_c(locloc(@2)), $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR incompl_located_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed incomplete located variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed incomplete located variable(s) declaration."); yyerrok;}
 | VAR RETAIN incompl_located_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed incomplete retentive located variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed incomplete retentive located variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN incompl_located_var_decl_list error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed incomplete non-retentive located variable(s) declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed incomplete non-retentive located variable(s) declaration."); yyerrok;}
 | VAR error incompl_located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in incomplete located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in incomplete located variable(s) declaration."); yyerrok;}
 | VAR RETAIN error incompl_located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive located variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN error incompl_located_var_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive located variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive located variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4567,13 +4556,13 @@ incompl_located_var_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | incompl_located_var_decl error
-	{$$ = new incompl_located_var_decl_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of incomplete located variable declaration."); yyerrok;}
+	{$$ = new incompl_located_var_decl_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of incomplete located variable declaration."); yyerrok;}
 | incompl_located_var_decl_list incompl_located_var_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of incomplete located variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of incomplete located variable declaration."); yyerrok;}
 | incompl_located_var_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid incomplete located variable declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid incomplete located variable declaration."); yyerrok;}
 | incompl_located_var_decl_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after incomplete located variable declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after incomplete located variable declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4583,12 +4572,12 @@ incompl_located_var_decl:
 	{$$ = new incompl_located_var_decl_c($1, $2, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | variable_name incompl_location var_spec
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing between incomplete located variable and type specification."); yynerrs++;
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing between incomplete located variable and type specification."); yynerrs++;
 	}
 | variable_name incompl_location ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no specification defined in incomplete located variable declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid specification in incomplete located variable declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no specification defined in incomplete located variable declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid specification in incomplete located variable declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4640,9 +4629,9 @@ var_init_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | var_init_decl_list var_init_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of variable(s) declaration."); yyerrok;}
 | var_init_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4813,27 +4802,27 @@ derived_function_name:
   identifier  /* will never occur during normal parsing, only needed for preparsing to change it to a prev_declared_derived_function_name! */
 | prev_declared_derived_function_name
 	{$$ = new identifier_c(((token_c *)$1)->value, locloc(@$)); // transform the poutype_identifier_c into an identifier_c
-	 if (get_preparse_state() && !allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (parser->get_preparse_state() && !allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 | AND
 	{$$ = new identifier_c("AND", locloc(@$));
-	 if (!allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (!allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 | OR
 	{$$ = new identifier_c("OR", locloc(@$));
-	 if (!allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (!allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 | XOR
 	{$$ = new identifier_c("XOR", locloc(@$));
-	 if (!allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (!allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 | NOT
 	{$$ = new identifier_c("NOT", locloc(@$));
-	 if (!allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (!allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 | MOD
 	{$$ = new identifier_c("MOD", locloc(@$));
-	 if (!allow_function_overloading) {print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
+	 if (!allow_function_overloading) {parser->print_err_msg(locloc(@$), "Function overloading not allowed. Invalid identifier.\n"); yynerrs++;}
 	}
 ;
 
@@ -4843,60 +4832,60 @@ function_declaration:
 /* PRE_PARSING: The rules expected to be applied by the preparser. */
   FUNCTION derived_function_name END_FUNCTION   /* rule that is only expected to be used during preparse state => MUST print an error if used outside preparse() state!! */
 	{$$ = NULL; 
-	 if (get_preparse_state())    {library_element_symtable.insert($2, prev_declared_derived_function_name_token);}
-	 else                         {print_err_msg(locl(@1), locf(@3), "FUNCTION with no variable declarations and no body."); yynerrs++;}
+	 if (parser->get_preparse_state())    {parser->library_element_symtable.insert($2, prev_declared_derived_function_name_token);}
+	 else                         {parser->print_err_msg(locl(@1), locf(@3), "FUNCTION with no variable declarations and no body."); yynerrs++;}
 	 }
 /* POST_PARSING and STANDARD_PARSING: The rules expected to be applied after the preparser has finished. */
 | function_name_declaration ':' elementary_type_name io_OR_function_var_declarations_list function_body END_FUNCTION
 	{$$ = new function_declaration_c($1, $3, $4, $5, locloc(@$));
-	 if (!runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 library_element_symtable.insert($1, prev_declared_derived_function_name_token);
+	 if (!parser->runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->library_element_symtable.insert($1, prev_declared_derived_function_name_token);
 	}
 /* | FUNCTION derived_function_name ':' derived_type_name io_OR_function_var_declarations_list function_body END_FUNCTION */
 | function_name_declaration ':' derived_type_name io_OR_function_var_declarations_list function_body END_FUNCTION
 	{$$ = new function_declaration_c($1, $3, $4, $5, locloc(@$));
-	 if (!runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 library_element_symtable.insert($1, prev_declared_derived_function_name_token);
+	 if (!parser->runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->library_element_symtable.insert($1, prev_declared_derived_function_name_token);
 	}
 /* | FUNCTION derived_function_name ':' VOID io_OR_function_var_declarations_list function_body END_FUNCTION */
 | function_name_declaration ':' VOID io_OR_function_var_declarations_list function_body END_FUNCTION
 	{$$ = new function_declaration_c($1, new void_type_name_c(locloc(@3)), $4, $5, locloc(@$));
-	 if (!runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 library_element_symtable.insert($1, prev_declared_derived_function_name_token);
+	 if (!parser->runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->library_element_symtable.insert($1, prev_declared_derived_function_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | function_name_declaration elementary_type_name io_OR_function_var_declarations_list function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing after function name in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing after function name in function declaration."); yynerrs++;}
 | function_name_declaration derived_type_name io_OR_function_var_declarations_list function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing after function name in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing after function name in function declaration."); yynerrs++;}
 | function_name_declaration ':' io_OR_function_var_declarations_list function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no return type defined in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no return type defined in function declaration."); yynerrs++;}
 | function_name_declaration ':' error io_OR_function_var_declarations_list function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid return type defined in function declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid return type defined in function declaration."); yyerrok;}
 | function_name_declaration ':' elementary_type_name function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no variable(s) declared in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no variable(s) declared in function declaration."); yynerrs++;}
 | function_name_declaration ':' derived_type_name function_body END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no variable(s) declared in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no variable(s) declared in function declaration."); yynerrs++;}
 | function_name_declaration ':' elementary_type_name io_OR_function_var_declarations_list END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "no body defined in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "no body defined in function declaration."); yynerrs++;}
 | function_name_declaration ':' derived_type_name io_OR_function_var_declarations_list END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "no body defined in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "no body defined in function declaration."); yynerrs++;}
 | function_name_declaration ':' elementary_type_name END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no variable(s) declared and body defined in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no variable(s) declared and body defined in function declaration."); yynerrs++;}
 | function_name_declaration ':' derived_type_name END_FUNCTION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no variable(s) declared and body defined in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no variable(s) declared and body defined in function declaration."); yynerrs++;}
 | function_name_declaration ':' elementary_type_name io_OR_function_var_declarations_list function_body END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locf(@3), "unclosed function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locf(@3), "unclosed function declaration."); yynerrs++;}
 | function_name_declaration ':' derived_type_name io_OR_function_var_declarations_list function_body END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed function declaration."); yynerrs++;}
 | function_name_declaration error END_FUNCTION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in function declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in function declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -4939,17 +4928,17 @@ function_name_declaration:
 	 /* the function name functions as a
 	  * variable within the function itself!
 	  *
-	  * Remember that the variable_name_symtable
+	  * Remember that the parser->variable_name_symtable
 	  * is cleared once the end of the function
 	  * is parsed.
 	  */
-	 variable_name_symtable.insert($2, prev_declared_variable_name_token);
+	 parser->variable_name_symtable.insert($2, prev_declared_variable_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | FUNCTION error 
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no function name defined in function declaration.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid function name in function declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no function name defined in function declaration.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid function name in function declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -4969,23 +4958,23 @@ io_OR_function_var_declarations_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | io_OR_function_var_declarations_list retentive_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected retentive variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected retentive variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list located_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected located variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected located variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list external_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected external variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected external variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list global_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list incompl_located_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected incomplete located variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected incomplete located variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list temp_var_decls
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected temporary located variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected temporary located variable(s) declaration in function declaration."); yynerrs++;}
 | io_OR_function_var_declarations_list non_retentive_var_decls
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected non-retentive variable(s) declaration in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected non-retentive variable(s) declaration in function declaration."); yynerrs++;}
 /*| io_OR_function_var_declarations_list access_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function declaration."); yynerrs++;}*/
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function declaration."); yynerrs++;}*/
 | io_OR_function_var_declarations_list instance_specific_initializations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5004,13 +4993,13 @@ function_var_decls:
 	{$$ = new function_var_decls_c(NULL, $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR error var2_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in function variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR' in function variable(s) declaration."); yyerrok;}
 | VAR CONSTANT error var2_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant function variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'CONSTANT' in constant function variable(s) declaration."); yyerrok;}
 | VAR var2_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed function variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed function variable(s) declaration."); yyerrok;}
 | VAR CONSTANT var2_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed constant function variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed constant function variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5022,13 +5011,13 @@ var2_init_decl_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | var2_init_decl error
-	{$$ = new var2_init_decl_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of function variable(s) declaration."); yyerrok;}
+	{$$ = new var2_init_decl_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of function variable(s) declaration."); yyerrok;}
 | var2_init_decl_list var2_init_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of function variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of function variable(s) declaration."); yyerrok;}
 | var2_init_decl_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid function variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid function variable(s) declaration."); yyerrok;}
 | var2_init_decl_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after function variable(s) declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after function variable(s) declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5070,47 +5059,47 @@ function_block_declaration:
 /* PRE_PARSING: The rules expected to be applied by the preparser. Will only run if pre-parsing command line option is ON. */
   FUNCTION_BLOCK derived_function_block_name END_FUNCTION_BLOCK   /* rule that is only expected to be used during preparse state => MUST print an error if used outside preparse() state!! */
 	{$$ = NULL; 
-	 if (get_preparse_state())    {library_element_symtable.insert($2, prev_declared_derived_function_block_name_token);}
-	 else                         {print_err_msg(locl(@1), locf(@3), "FUNCTION_BLOCK with no variable declarations and no body."); yynerrs++;}
+	 if (parser->get_preparse_state())    {parser->library_element_symtable.insert($2, prev_declared_derived_function_block_name_token);}
+	 else                         {parser->print_err_msg(locl(@1), locf(@3), "FUNCTION_BLOCK with no variable declarations and no body."); yynerrs++;}
 	 }
 /* POST_PARSING: The rules expected to be applied after the preparser runs. Will only run if pre-parsing command line option is ON. */
 | FUNCTION_BLOCK prev_declared_derived_function_block_name io_OR_other_var_declarations_list function_block_body END_FUNCTION_BLOCK
 	{$$ = new function_block_declaration_c($2, $3, $4, locloc(@$));
-	 if (!runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
-	 /* Clear the variable_name_symtable. Since we have finished parsing the function block,
+	 if (!parser->runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
+	 /* Clear the parser->variable_name_symtable. Since we have finished parsing the function block,
 	  * the variable names are now out of scope, so are no longer valid!
 	  */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 	}
 /* STANDARD_PARSING: The rules expected to be applied in single-phase parsing. Will only run if pre-parsing command line option is OFF. */
 | FUNCTION_BLOCK derived_function_block_name io_OR_other_var_declarations_list function_block_body END_FUNCTION_BLOCK
 	{$$ = new function_block_declaration_c($2, $3, $4, locloc(@$));
-	 library_element_symtable.insert($2, prev_declared_derived_function_block_name_token);
-	 if (!runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
-	 /* Clear the variable_name_symtable. Since we have finished parsing the function block,
+	 parser->library_element_symtable.insert($2, prev_declared_derived_function_block_name_token);
+	 if (!parser->runtime_options.disable_implicit_en_eno) add_en_eno_param_decl_c::add_to($$); /* add EN and ENO declarations, if not already there */
+	 /* Clear the parser->variable_name_symtable. Since we have finished parsing the function block,
 	  * the variable names are now out of scope, so are no longer valid!
 	  */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 	}
 /* ERROR_CHECK_BEGIN */
 | FUNCTION_BLOCK io_OR_other_var_declarations_list function_block_body END_FUNCTION_BLOCK
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block name defined in function block declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in function block declaration."); yynerrs++;}
 | FUNCTION_BLOCK error io_OR_other_var_declarations_list function_block_body END_FUNCTION_BLOCK
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid function block name in function block declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid function block name in function block declaration."); yyerrok;}
 | FUNCTION_BLOCK derived_function_block_name function_block_body END_FUNCTION_BLOCK
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable(s) declared in function declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable(s) declared in function declaration."); yynerrs++;}
 | FUNCTION_BLOCK derived_function_block_name io_OR_other_var_declarations_list END_FUNCTION_BLOCK
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no body defined in function block declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no body defined in function block declaration."); yynerrs++;}
 /*  Rule already covered by the rule to handle the preparse state!
 | FUNCTION_BLOCK derived_function_block_name END_FUNCTION_BLOCK
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable(s) declared and body defined in function block declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable(s) declared and body defined in function block declaration."); yynerrs++;}
 */
 | FUNCTION_BLOCK derived_function_block_name io_OR_other_var_declarations_list function_block_body END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "expecting END_FUNCTION_BLOCK before end of file."); yynerrs++;}	
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "expecting END_FUNCTION_BLOCK before end of file."); yynerrs++;}	
 | FUNCTION_BLOCK error END_FUNCTION_BLOCK
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in function block declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in function block declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5132,13 +5121,13 @@ io_OR_other_var_declarations_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | io_OR_other_var_declarations_list located_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected located variable(s) declaration in function block declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected located variable(s) declaration in function block declaration."); yynerrs++;}
 | io_OR_other_var_declarations_list global_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function block declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function block declaration."); yynerrs++;}
 /*| io_OR_other_var_declarations_list access_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function block declaration."); yynerrs++;}*/
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function block declaration."); yynerrs++;}*/
 | io_OR_other_var_declarations_list instance_specific_initializations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function block declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function block declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5173,11 +5162,11 @@ temp_var_decls:
 	{$$ = new temp_var_decls_c($2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_TEMP END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in temporary variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in temporary variable(s) declaration."); yynerrs++;}
 | VAR_TEMP temp_var_decls_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "unclosed temporary variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "unclosed temporary variable(s) declaration."); yyerrok;}
 | VAR_TEMP error temp_var_decls_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_TEMP' in function variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_TEMP' in function variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5190,15 +5179,15 @@ temp_var_decls_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-	{$$ = new temp_var_decls_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid temporary variable(s) declaration."); yyerrok;}
+	{$$ = new temp_var_decls_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid temporary variable(s) declaration."); yyerrok;}
 | temp_var_decl error
-	{$$ = new temp_var_decls_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at end of temporary variable(s) declaration."); yyerrok;}
+	{$$ = new temp_var_decls_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at end of temporary variable(s) declaration."); yyerrok;}
 | temp_var_decls_list temp_var_decl error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of temporary variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of temporary variable(s) declaration."); yyerrok;}
 | temp_var_decls_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid temporary variable(s) declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid temporary variable(s) declaration."); yyerrok;}
 | temp_var_decls_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after temporary variable(s) declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after temporary variable(s) declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5208,9 +5197,9 @@ non_retentive_var_decls:
 	{$$ = new non_retentive_var_decls_c($3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR NON_RETAIN var_init_decl_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unclosed non-retentive temporary variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unclosed non-retentive temporary variable(s) declaration."); yyerrok;}
 | VAR NON_RETAIN error var_init_decl_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive temporary variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive temporary variable(s) declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5252,44 +5241,44 @@ program_declaration:
 /* PRE_PARSING: The rules expected to be applied by the preparser. Will only run if pre-parsing command line option is ON. */
   PROGRAM program_type_name END_PROGRAM   /* rule that is only expected to be used during preparse state => MUST print an error if used outside preparse() state!! */
 	{$$ = NULL; 
-	 if (get_preparse_state())    {library_element_symtable.insert($2, prev_declared_program_type_name_token);}
-	 else                         {print_err_msg(locl(@1), locf(@3), "PROGRAM with no variable declarations and no body."); yynerrs++;}
+	 if (parser->get_preparse_state())    {parser->library_element_symtable.insert($2, prev_declared_program_type_name_token);}
+	 else                         {parser->print_err_msg(locl(@1), locf(@3), "PROGRAM with no variable declarations and no body."); yynerrs++;}
 	 }
 /* POST_PARSING: The rules expected to be applied after the preparser runs. Will only run if pre-parsing command line option is ON. */
 | PROGRAM prev_declared_program_type_name program_var_declarations_list function_block_body END_PROGRAM
 	{$$ = new program_declaration_c($2, $3, $4, locloc(@$));
-	 /* Clear the variable_name_symtable. Since we have finished parsing the program declaration,
+	 /* Clear the parser->variable_name_symtable. Since we have finished parsing the program declaration,
 	  * the variable names are now out of scope, so are no longer valid!
 	  */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 	}
 /* STANDARD_PARSING: The rules expected to be applied in single-phase parsing. Will only run if pre-parsing command line option is OFF. */
-| PROGRAM program_type_name {library_element_symtable.insert($2, prev_declared_program_type_name_token);} program_var_declarations_list function_block_body END_PROGRAM
+| PROGRAM program_type_name {parser->library_element_symtable.insert($2, prev_declared_program_type_name_token);} program_var_declarations_list function_block_body END_PROGRAM
 	{$$ = new program_declaration_c($2, $4, $5, locloc(@$));
-	 /* Clear the variable_name_symtable. Since we have finished parsing the program declaration,
+	 /* Clear the parser->variable_name_symtable. Since we have finished parsing the program declaration,
 	  * the variable names are now out of scope, so are no longer valid!
 	  */
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 	}
 /* ERROR_CHECK_BEGIN */
 | PROGRAM program_var_declarations_list function_block_body END_PROGRAM
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no program name defined in program declaration.");}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no program name defined in program declaration.");}
 | PROGRAM error program_var_declarations_list function_block_body END_PROGRAM
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid program name in program declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid program name in program declaration."); yyerrok;}
 | PROGRAM prev_declared_program_type_name function_block_body END_PROGRAM
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable(s) declared in program declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable(s) declared in program declaration."); yynerrs++;}
 | PROGRAM prev_declared_program_type_name program_var_declarations_list END_PROGRAM
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no body defined in program declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no body defined in program declaration."); yynerrs++;}
 /*  Rule already covered by the rule to handle the preparse state!
 | PROGRAM prev_declared_program_type_name END_PROGRAM 
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no variable(s) declared and body defined in program declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no variable(s) declared and body defined in program declaration."); yynerrs++;}
 */
 | PROGRAM prev_declared_program_type_name program_var_declarations_list function_block_body END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed program declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed program declaration."); yynerrs++;}
 | PROGRAM error END_PROGRAM
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in program declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in program declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5317,11 +5306,11 @@ program_var_declarations_list:
 */
 /* ERROR_CHECK_BEGIN */
 | program_var_declarations_list global_var_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function block declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected global variable(s) declaration in function block declaration."); yynerrs++;}
 /*| program_var_declarations_list access_declarations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function block declaration."); yynerrs++;}*/
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected access variable(s) declaration in function block declaration."); yynerrs++;}*/
 | program_var_declarations_list instance_specific_initializations
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function block declaration."); yynerrs++;
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected instance specific initialization(s) in function block declaration."); yynerrs++;
 	}
 /* ERROR_CHECK_END */
 ;
@@ -5373,7 +5362,7 @@ sfc_network:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | sfc_network error 
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "unexpected token after SFC network in sequencial function chart."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "unexpected token after SFC network in sequencial function chart."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5381,21 +5370,21 @@ initial_step:
   INITIAL_STEP step_name ':' action_association_list END_STEP
 //  INITIAL_STEP identifier ':' action_association_list END_STEP
 	{$$ = new initial_step_c($2, $4, locloc(@$));
-	 variable_name_symtable.insert($2, prev_declared_variable_name_token); // A step name may later be used as a structured variable!!
+	 parser->variable_name_symtable.insert($2, prev_declared_variable_name_token); // A step name may later be used as a structured variable!!
 	}
 /* ERROR_CHECK_BEGIN */
 | INITIAL_STEP ':' action_association_list END_STEP
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "no step name defined in initial step declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "no step name defined in initial step declaration."); yynerrs++;}
 | INITIAL_STEP error ':' action_association_list END_STEP
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid step name defined in initial step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid step name defined in initial step declaration."); yyerrok;}
 | INITIAL_STEP step_name action_association_list END_STEP
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':' missing after step name in initial step declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':' missing after step name in initial step declaration."); yynerrs++;}
 | INITIAL_STEP step_name ':' error END_STEP
-	{$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid action association list in initial step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid action association list in initial step declaration."); yyerrok;}
 | INITIAL_STEP step_name ':' action_association_list END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed initial step declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed initial step declaration."); yynerrs++;}
 | INITIAL_STEP error END_STEP
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in initial step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in initial step declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5403,21 +5392,21 @@ step:
   STEP step_name ':' action_association_list END_STEP
 //  STEP identifier ':' action_association_list END_STEP
 	{$$ = new step_c($2, $4, locloc(@$));
-	 variable_name_symtable.insert($2, prev_declared_variable_name_token); // A step name may later be used as a structured variable!!
+	 parser->variable_name_symtable.insert($2, prev_declared_variable_name_token); // A step name may later be used as a structured variable!!
 	}
 /* ERROR_CHECK_BEGIN */
 | STEP ':' action_association_list END_STEP
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no step name defined in step declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no step name defined in step declaration."); yynerrs++;}
 | STEP error ':' action_association_list END_STEP
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid step name defined in step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid step name defined in step declaration."); yyerrok;}
 | STEP step_name action_association_list END_STEP
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':' missing after step name in step declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':' missing after step name in step declaration."); yynerrs++;}
 | STEP step_name ':' error END_STEP
-	{$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid action association list in step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid action association list in step declaration."); yyerrok;}
 | STEP step_name ':' action_association_list END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@3), "invalid action association list in step declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "invalid action association list in step declaration."); yynerrs++;}
 | STEP error END_STEP
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in step declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in step declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5432,9 +5421,9 @@ action_association_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | action_association_list action_association error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at end of action association declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at end of action association declaration."); yyerrok;}
 | action_association_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after action association declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after action association declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5443,11 +5432,11 @@ action_association_list:
 step_name: any_identifier;
 
 action_association:
-  action_name '(' {cmd_goto_sfc_qualifier_state();} action_qualifier {cmd_pop_state();} indicator_name_list ')'
+  action_name '(' {parser->cmd_goto_sfc_qualifier_state();} action_qualifier {parser->cmd_pop_state();} indicator_name_list ')'
 	{$$ = new action_association_c($1, $4, $6, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 /*| action_name '(' error ')'
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid qualifier defined in action association."); yyerrok;}*/
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid qualifier defined in action association."); yyerrok;}*/
 /* ERROR_CHECK_END */
 ;
 
@@ -5459,11 +5448,11 @@ indicator_name_list:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | indicator_name_list indicator_name
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing at end of action association declaration."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing at end of action association declaration."); yynerrs++;}
 | indicator_name_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no indicator defined in indicator list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid indicator in indicator list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no indicator defined in indicator list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid indicator in indicator list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -5481,11 +5470,11 @@ action_qualifier:
 	{$$ = new action_qualifier_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | timed_qualifier action_time
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "',' missing between timed qualifier and action time in action qualifier."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "',' missing between timed qualifier and action time in action qualifier."); yynerrs++;}
 | timed_qualifier ',' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no action time defined in action qualifier.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid action time in action qualifier."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no action time defined in action qualifier.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid action time in action qualifier."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -5575,9 +5564,9 @@ steps:
 	{$$ = new steps_c(NULL, $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | '(' step_name_list error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "expecting ')' at the end of step list in transition declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "expecting ')' at the end of step list in transition declaration."); yyerrok;}
 | '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid step list in transition declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid step list in transition declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5588,11 +5577,11 @@ step_name_list:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | step_name_list step_name
-	{$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in step list."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in step list."); yynerrs++;}
 | step_name_list ',' error
 	{$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no step name defined in step list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid step name in step list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no step name defined in step list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid step name in step list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -5606,65 +5595,65 @@ step_name_list:
 transition:
   TRANSITION transition_priority
     FROM steps TO steps 
-    {cmd_goto_body_state();} transition_condition 
+    {parser->cmd_goto_body_state();} transition_condition 
   END_TRANSITION 
 	{$$ = new transition_c(NULL, $2, $4, $6, $8, locloc(@$));}
 //| TRANSITION identifier FROM steps TO steps ... 
 | TRANSITION transition_name transition_priority
     FROM steps TO steps 
-    {cmd_goto_body_state();} transition_condition 
+    {parser->cmd_goto_body_state();} transition_condition 
   END_TRANSITION 
 	{$$ = new transition_c($2, $3, $5, $7, $9, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
-| TRANSITION error transition_priority FROM steps TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid transition name defined in transition declaration."); yyerrok;}
-| TRANSITION transition_name error FROM steps TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid transition priority defined in transition declaration."); yyerrok;}
-| TRANSITION transition_priority FROM TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "no origin step(s) defined in transition declaration."); yynerrs++;}
-| TRANSITION transition_name transition_priority FROM TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "no origin step(s) defined in transition declaration."); yynerrs++;}
-| TRANSITION transition_priority FROM error TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid origin step(s) defined in transition declaration."); yyerrok;}
-| TRANSITION transition_name transition_priority FROM error TO steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@5), locl(@5), "invalid origin step(s) defined in transition declaration."); yyerrok;}
-| TRANSITION transition_priority FROM steps steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@4), locf(@5), "'TO' missing between origin step(s) and destination step(s) in transition declaration."); yynerrs++;}
-| TRANSITION transition_name transition_priority FROM steps steps {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@5), locf(@6), "'TO' missing between origin step(s) and destination step(s) in transition declaration."); yynerrs++;}
-| TRANSITION transition_priority FROM steps TO {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@5), locf(@7), "no destination step(s) defined in transition declaration."); yynerrs++;}
-| TRANSITION transition_name transition_priority FROM steps TO {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@6), locf(@8), "no destination step(s) defined in transition declaration."); yynerrs++;}
-| TRANSITION transition_priority FROM steps TO error {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@6), locl(@6), "invalid destination step(s) defined in transition declaration."); yyerrok;}
-| TRANSITION transition_name transition_priority FROM steps TO error {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@7), locl(@7), "invalid destination step(s) defined in transition declaration."); yyerrok;}
-| TRANSITION transition_priority {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@2), locf(@4), "no origin and destination step(s) defined in transition declaration."); yynerrs++;}
-| TRANSITION transition_name transition_priority {cmd_goto_body_state();} transition_condition END_TRANSITION
-	{$$ = NULL; print_err_msg(locl(@3), locf(@5), "no origin and destination step(s) defined in transition declaration."); yynerrs++;}
-/*| TRANSITION transition_priority FROM steps TO steps {cmd_goto_body_state();} transition_condition error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@6), "unclosed transition declaration."); yyerrok;}
-| TRANSITION transition_name transition_priority FROM steps TO steps {cmd_goto_body_state();} transition_condition error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@7), "unclosed transition declaration."); yyerrok;}*/
+| TRANSITION error transition_priority FROM steps TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid transition name defined in transition declaration."); yyerrok;}
+| TRANSITION transition_name error FROM steps TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid transition priority defined in transition declaration."); yyerrok;}
+| TRANSITION transition_priority FROM TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no origin step(s) defined in transition declaration."); yynerrs++;}
+| TRANSITION transition_name transition_priority FROM TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "no origin step(s) defined in transition declaration."); yynerrs++;}
+| TRANSITION transition_priority FROM error TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid origin step(s) defined in transition declaration."); yyerrok;}
+| TRANSITION transition_name transition_priority FROM error TO steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@5), locl(@5), "invalid origin step(s) defined in transition declaration."); yyerrok;}
+| TRANSITION transition_priority FROM steps steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "'TO' missing between origin step(s) and destination step(s) in transition declaration."); yynerrs++;}
+| TRANSITION transition_name transition_priority FROM steps steps {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "'TO' missing between origin step(s) and destination step(s) in transition declaration."); yynerrs++;}
+| TRANSITION transition_priority FROM steps TO {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@5), locf(@7), "no destination step(s) defined in transition declaration."); yynerrs++;}
+| TRANSITION transition_name transition_priority FROM steps TO {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@6), locf(@8), "no destination step(s) defined in transition declaration."); yynerrs++;}
+| TRANSITION transition_priority FROM steps TO error {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@6), locl(@6), "invalid destination step(s) defined in transition declaration."); yyerrok;}
+| TRANSITION transition_name transition_priority FROM steps TO error {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locf(@7), locl(@7), "invalid destination step(s) defined in transition declaration."); yyerrok;}
+| TRANSITION transition_priority {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@4), "no origin and destination step(s) defined in transition declaration."); yynerrs++;}
+| TRANSITION transition_name transition_priority {parser->cmd_goto_body_state();} transition_condition END_TRANSITION
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@5), "no origin and destination step(s) defined in transition declaration."); yynerrs++;}
+/*| TRANSITION transition_priority FROM steps TO steps {parser->cmd_goto_body_state();} transition_condition error END_OF_INPUT
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@6), "unclosed transition declaration."); yyerrok;}
+| TRANSITION transition_name transition_priority FROM steps TO steps {parser->cmd_goto_body_state();} transition_condition error END_OF_INPUT
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@7), "unclosed transition declaration."); yyerrok;}*/
 | TRANSITION error END_TRANSITION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in transition declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in transition declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
 transition_priority:
   /* empty */
   {$$ = NULL;}
-| '(' {cmd_goto_sfc_priority_state();} PRIORITY {cmd_pop_state();} ASSIGN integer ')'
+| '(' {parser->cmd_goto_sfc_priority_state();} PRIORITY {parser->cmd_pop_state();} ASSIGN integer ')'
 	{$$ = $6;}
 /* ERROR_CHECK_BEGIN */
 /* The following error checking rules have been intentionally commented out. */
 /*
 | '(' ASSIGN integer ')'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'PRIORITY' missing between '(' and ':=' in transition declaration with priority."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'PRIORITY' missing between '(' and ':=' in transition declaration with priority."); yynerrs++;}
 | '(' error ASSIGN integer ')'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "expecting 'PRIORITY' between '(' and ':=' in transition declaration with priority."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "expecting 'PRIORITY' between '(' and ':=' in transition declaration with priority."); yyerrok;}
 */
 /* ERROR_CHECK_END */
 ;
@@ -5677,19 +5666,19 @@ transition_condition:
 	{$$ = new transition_condition_c(NULL, $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | start_IL_body_token eol_list simple_instr_list
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "':' missing before IL condition in transition declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':' missing before IL condition in transition declaration."); yynerrs++;}
 | start_IL_body_token ':' eol_list error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no instructions defined in IL condition of transition declaration.");}
-	 else {print_err_msg(locf(@4), locl(@4), "invalid instructions in IL condition of transition declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@3), locf(@4), "no instructions defined in IL condition of transition declaration.");}
+	 else {parser->print_err_msg(locf(@4), locl(@4), "invalid instructions in IL condition of transition declaration."); yyclearin;}
 	 yyerrok;
 	}
 | ASSIGN ';'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no expression defined in ST condition of transition declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no expression defined in ST condition of transition declaration."); yynerrs++;}
 | ASSIGN error ';'
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid expression defined in ST condition of transition declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid expression defined in ST condition of transition declaration."); yyerrok;}
 | ASSIGN expression error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "expecting ';' after expression defined in ST condition of transition declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "expecting ';' after expression defined in ST condition of transition declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5697,19 +5686,19 @@ transition_condition:
 
 action:
 //  ACTION identifier ':' ... 
-  ACTION action_name {cmd_goto_body_state();} action_body END_ACTION
+  ACTION action_name {parser->cmd_goto_body_state();} action_body END_ACTION
 	{$$ = new action_c($2, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
-| ACTION {cmd_goto_body_state();} action_body END_ACTION
-  {$$ = NULL; print_err_msg(locl(@1), locf(@3), "no action name defined in action declaration."); yynerrs++;}
-| ACTION error {cmd_goto_body_state();} action_body END_ACTION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid action name defined in action declaration."); yyerrok;}
-| ACTION action_name {cmd_goto_body_state();} function_block_body END_ACTION
-	{$$ = NULL; print_err_msg(locl(@2), locf(@4), "':' missing after action name in action declaration."); yynerrs++;}
-/*| ACTION action_name {cmd_goto_body_state();} action_body END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed action declaration."); yyerrok;}*/
+| ACTION {parser->cmd_goto_body_state();} action_body END_ACTION
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "no action name defined in action declaration."); yynerrs++;}
+| ACTION error {parser->cmd_goto_body_state();} action_body END_ACTION
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid action name defined in action declaration."); yyerrok;}
+| ACTION action_name {parser->cmd_goto_body_state();} function_block_body END_ACTION
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@4), "':' missing after action name in action declaration."); yynerrs++;}
+/*| ACTION action_name {parser->cmd_goto_body_state();} action_body END_OF_INPUT
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed action declaration."); yyerrok;}*/
 | ACTION error END_ACTION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in action declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in action declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5719,8 +5708,8 @@ action_body:
 /* ERROR_CHECK_BEGIN */
 | ':' error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no body defined in action declaration.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid body defined in action declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no body defined in action declaration.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid body defined in action declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -5796,21 +5785,21 @@ configuration_declaration:
 /* PRE_PARSING: The rules expected to be applied by the preparser. Will only run if pre-parsing command line option is ON. */
   CONFIGURATION configuration_name END_CONFIGURATION   /* rule that is only expected to be used during preparse state */
 	{$$ = NULL; 
-	 if (get_preparse_state())    {library_element_symtable.insert($2, prev_declared_configuration_name_token);}
-	 else                         {print_err_msg(locl(@1), locf(@3), "no resource(s) nor program(s) defined in configuration declaration."); yynerrs++;}
+	 if (parser->get_preparse_state())    {parser->library_element_symtable.insert($2, prev_declared_configuration_name_token);}
+	 else                         {parser->print_err_msg(locl(@1), locf(@3), "no resource(s) nor program(s) defined in configuration declaration."); yynerrs++;}
 	 }
 /* POST_PARSING: The rules expected to be applied after the preparser runs. Will only run if pre-parsing command line option is ON. */
 | CONFIGURATION prev_declared_configuration_name
    global_var_declarations_list
    single_resource_declaration
-   {variable_name_symtable.pop();
-    direct_variable_symtable.pop();}
+   {parser->variable_name_symtable.pop();
+    parser->direct_variable_symtable.pop();}
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
 	{$$ = new configuration_declaration_c($2, $3, $4, $6, $7, locloc(@$));
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 	}
 | CONFIGURATION prev_declared_configuration_name
    global_var_declarations_list
@@ -5819,22 +5808,22 @@ configuration_declaration:
    optional_instance_specific_initializations
  END_CONFIGURATION
 	{$$ = new configuration_declaration_c($2, $3, $4, $5, $6, locloc(@$));
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
 }
 /* STANDARD_PARSING: The rules expected to be applied in single-phase parsing. Will only run if pre-parsing command line option is OFF. */
 | CONFIGURATION configuration_name
    global_var_declarations_list
    single_resource_declaration
-   {variable_name_symtable.pop();
-    direct_variable_symtable.pop();}
+   {parser->variable_name_symtable.pop();
+    parser->direct_variable_symtable.pop();}
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
 	{$$ = new configuration_declaration_c($2, $3, $4, $6, $7, locloc(@$));
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 library_element_symtable.insert($2, prev_declared_configuration_name_token);
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->library_element_symtable.insert($2, prev_declared_configuration_name_token);
 	}
 | CONFIGURATION configuration_name
    global_var_declarations_list
@@ -5843,50 +5832,50 @@ configuration_declaration:
    optional_instance_specific_initializations
  END_CONFIGURATION
 	{$$ = new configuration_declaration_c($2, $3, $4, $5, $6, locloc(@$));
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 library_element_symtable.insert($2, prev_declared_configuration_name_token);
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->library_element_symtable.insert($2, prev_declared_configuration_name_token);
 }
 /* ERROR_CHECK_BEGIN */
 | CONFIGURATION 
    global_var_declarations_list
    single_resource_declaration
-   {variable_name_symtable.pop();
-    direct_variable_symtable.pop();}
+   {parser->variable_name_symtable.pop();
+    parser->direct_variable_symtable.pop();}
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no configuration name defined in configuration declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no configuration name defined in configuration declaration."); yynerrs++;}
 | CONFIGURATION
    global_var_declarations_list
    resource_declaration_list
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no configuration name defined in configuration declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no configuration name defined in configuration declaration."); yynerrs++;}
 | CONFIGURATION error
    global_var_declarations_list
    single_resource_declaration
-   {variable_name_symtable.pop();
-    direct_variable_symtable.pop();}
+   {parser->variable_name_symtable.pop();
+    parser->direct_variable_symtable.pop();}
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid configuration name defined in configuration declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid configuration name defined in configuration declaration."); yyerrok;}
 | CONFIGURATION error
    global_var_declarations_list
    resource_declaration_list
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid configuration name defined in configuration declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid configuration name defined in configuration declaration."); yyerrok;}
 /*  Rule already covered by the rule to handle the preparse state!
 | CONFIGURATION configuration_name
    global_var_declarations_list
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no resource(s) defined in configuration declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no resource(s) defined in configuration declaration."); yynerrs++;}
 */
 | CONFIGURATION configuration_name
    global_var_declarations_list
@@ -5894,25 +5883,25 @@ configuration_declaration:
    optional_access_declarations
    optional_instance_specific_initializations
   END_CONFIGURATION
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid resource(s) defined in configuration declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid resource(s) defined in configuration declaration."); yyerrok;}
 /*| CONFIGURATION configuration_name
    global_var_declarations_list
    single_resource_declaration
-   {variable_name_symtable.pop();
-    direct_variable_symtable.pop();}
+   {parser->variable_name_symtable.pop();
+    parser->direct_variable_symtable.pop();}
    optional_access_declarations
    optional_instance_specific_initializations
   END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed configuration declaration."); yyerrok;}*/
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed configuration declaration."); yyerrok;}*/
 | CONFIGURATION configuration_name
    global_var_declarations_list
    resource_declaration_list
    optional_access_declarations
    optional_instance_specific_initializations
   END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed configuration declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed configuration declaration."); yyerrok;}
 | CONFIGURATION error END_CONFIGURATION
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in configuration declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in configuration declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -5967,34 +5956,34 @@ resource_declaration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | resource_declaration_list error
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected token after resource declaration."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after resource declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
 
 resource_declaration:
-  RESOURCE {variable_name_symtable.push();direct_variable_symtable.push();} resource_name {variable_name_symtable.insert($3, prev_declared_resource_name_token);} ON resource_type_name
+  RESOURCE {parser->variable_name_symtable.push();parser->direct_variable_symtable.push();} resource_name {parser->variable_name_symtable.insert($3, prev_declared_resource_name_token);} ON resource_type_name
    global_var_declarations_list
    single_resource_declaration
   END_RESOURCE
 	{$$ = new resource_declaration_c($3, $6, $7, $8, locloc(@$));
-	 variable_name_symtable.pop();
-	 direct_variable_symtable.pop();
-	 variable_name_symtable.insert($3, prev_declared_resource_name_token);
+	 parser->variable_name_symtable.pop();
+	 parser->direct_variable_symtable.pop();
+	 parser->variable_name_symtable.insert($3, prev_declared_resource_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
-| RESOURCE {variable_name_symtable.push();direct_variable_symtable.push();} ON resource_type_name
+| RESOURCE {parser->variable_name_symtable.push();parser->direct_variable_symtable.push();} ON resource_type_name
    global_var_declarations_list
    single_resource_declaration
   END_RESOURCE
-  {$$ = NULL; print_err_msg(locl(@1), locf(@3), "no resource name defined in resource declaration."); yynerrs++;}
-/*|	RESOURCE {variable_name_symtable.push();direct_variable_symtable.push();} resource_name ON resource_type_name
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "no resource name defined in resource declaration."); yynerrs++;}
+/*|	RESOURCE {parser->variable_name_symtable.push();parser->direct_variable_symtable.push();} resource_name ON resource_type_name
    global_var_declarations_list
    single_resource_declaration
   END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@5), "unclosed resource declaration."); yyerrok;}*/
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@5), "unclosed resource declaration."); yyerrok;}*/
 | RESOURCE error END_RESOURCE
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in resource declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in resource declaration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6013,9 +6002,9 @@ task_configuration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | task_configuration_list task_configuration error
-  {$$ = $1; print_err_msg(locl(@1), locf(@2), "';' missing at the end of task configuration in resource declaration."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "';' missing at the end of task configuration in resource declaration."); yyerrok;}
 | task_configuration_list ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after task configuration in resource declaration."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after task configuration in resource declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6028,13 +6017,13 @@ program_configuration_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | program_configuration error
-  {$$ = new program_configuration_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at the end of program configuration in resource declaration."); yyerrok;}
+  {$$ = new program_configuration_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at the end of program configuration in resource declaration."); yyerrok;}
 | program_configuration_list program_configuration error
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at the end of program configuration in resource declaration."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at the end of program configuration in resource declaration."); yyerrok;}
 | program_configuration_list error ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid program configuration in resource declaration."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid program configuration in resource declaration."); yyerrok;}
 | program_configuration_list ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after program configuration in resource declaration."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after program configuration in resource declaration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6047,13 +6036,13 @@ access_declarations:
 	{$$ = NULL;}
 // ERROR_CHECK_BEGIN //
 | VAR_ACCESS END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in access variable(s) declaration."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in access variable(s) declaration."); yynerrs++;}
 | VAR_ACCESS error access_declaration_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_ACCESS' in access variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_ACCESS' in access variable(s) declaration."); yyerrok;}
 | VAR_ACCESS access_declaration_list error END_VAR
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed access variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed access variable(s) declaration."); yyerrok;}
 | VAR_ACCESS error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in access variable(s) declaration."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in access variable(s) declaration."); yyerrok;}
 // ERROR_CHECK_END //
 ;
 
@@ -6064,16 +6053,16 @@ access_declaration_list:
 // ERROR_CHECK_BEGIN //
 | error ';'
   {$$ = // create a new list //;
-	 print_err_msg(locf(@1), locl(@1), "invalid access variable declaration."); yyerrok;}
+	 parser->print_err_msg(locf(@1), locl(@1), "invalid access variable declaration."); yyerrok;}
 | access_declaration error
   {$$ = // create a new list //;
-	 print_err_msg(locl(@1), locf(@2), "';' missing at the end of access variable declaration."); yyerrok;}
+	 parser->print_err_msg(locl(@1), locf(@2), "';' missing at the end of access variable declaration."); yyerrok;}
 | access_declaration_list access_declaration error
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at the end of access variable declaration."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at the end of access variable declaration."); yyerrok;}
 | access_declaration_list error ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid access variable declaration."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid access variable declaration."); yyerrok;}
 | access_declaration_list ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after access variable declaration."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after access variable declaration."); yynerrs++;}
 // ERROR_CHECK_END //
 ;
 
@@ -6168,13 +6157,13 @@ task_configuration:
 	{$$ = new task_configuration_c($2, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | TASK task_initialization
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no task name defined in task declaration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no task name defined in task declaration."); yynerrs++;}
 | TASK error task_initialization
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid task name defined in task declaration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid task name defined in task declaration."); yyerrok;}
 | TASK task_name error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no task initialization defined in task declaration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid task initialization in task declaration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no task initialization defined in task declaration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid task initialization in task declaration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6192,7 +6181,7 @@ task_name: any_identifier;
 
 task_initialization:
 //  '(' [SINGLE ASSIGN data_source ','] [INTERVAL ASSIGN data_source ','] PRIORITY ASSIGN integer ')' //
-  '(' {cmd_goto_task_init_state();} task_initialization_single task_initialization_interval task_initialization_priority ')'
+  '(' {parser->cmd_goto_task_init_state();} task_initialization_single task_initialization_interval task_initialization_priority ')'
 	{$$ = new task_initialization_c($3, $4, $5, locloc(@$));}
 ;
 
@@ -6201,15 +6190,15 @@ task_initialization_single:
 // [SINGLE ASSIGN data_source ',']
   /* empty */
 	{$$ = NULL;}
-| SINGLE ASSIGN {cmd_pop_state();} data_source ',' {cmd_goto_task_init_state();} 
+| SINGLE ASSIGN {parser->cmd_pop_state();} data_source ',' {parser->cmd_goto_task_init_state();} 
 	{$$ = $4;}
 /* ERROR_CHECK_BEGIN */
-| SINGLE {cmd_pop_state();} data_source ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locl(@1), locf(@3), "':=' missing after 'SINGLE' in task initialization."); yynerrs++;}
-| SINGLE ASSIGN {cmd_pop_state();} ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locl(@2), locf(@4), "no data source defined in 'SINGLE' statement of task initialization."); yynerrs++;}
-| SINGLE ASSIGN {cmd_pop_state();} error ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid data source defined in 'SINGLE' statement of task initialization."); yyerrok;}
+| SINGLE {parser->cmd_pop_state();} data_source ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "':=' missing after 'SINGLE' in task initialization."); yynerrs++;}
+| SINGLE ASSIGN {parser->cmd_pop_state();} ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@4), "no data source defined in 'SINGLE' statement of task initialization."); yynerrs++;}
+| SINGLE ASSIGN {parser->cmd_pop_state();} error ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid data source defined in 'SINGLE' statement of task initialization."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6218,15 +6207,15 @@ task_initialization_interval:
 // [INTERVAL ASSIGN data_source ','] 
   /* empty */
 	{$$ = NULL;}
-| INTERVAL ASSIGN {cmd_pop_state();} data_source ',' {cmd_goto_task_init_state();}
+| INTERVAL ASSIGN {parser->cmd_pop_state();} data_source ',' {parser->cmd_goto_task_init_state();}
 	{$$ = $4;}
 /* ERROR_CHECK_BEGIN */
-| INTERVAL {cmd_pop_state();} data_source ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locl(@1), locf(@3), "':=' missing after 'INTERVAL' in task initialization.");}
-| INTERVAL ASSIGN {cmd_pop_state();} ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locl(@2), locf(@4), "no data source defined in 'INTERVAL' statement of task initialization."); yynerrs++;}
-| INTERVAL ASSIGN {cmd_pop_state();} error ',' {cmd_goto_task_init_state();}
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid data source defined in 'INTERVAL' statement of task initialization."); yyerrok;}
+| INTERVAL {parser->cmd_pop_state();} data_source ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "':=' missing after 'INTERVAL' in task initialization.");}
+| INTERVAL ASSIGN {parser->cmd_pop_state();} ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@4), "no data source defined in 'INTERVAL' statement of task initialization."); yynerrs++;}
+| INTERVAL ASSIGN {parser->cmd_pop_state();} error ',' {parser->cmd_goto_task_init_state();}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid data source defined in 'INTERVAL' statement of task initialization."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6234,15 +6223,15 @@ task_initialization_interval:
 
 task_initialization_priority:
 // PRIORITY ASSIGN integer
-  PRIORITY ASSIGN {cmd_pop_state();} integer 
+  PRIORITY ASSIGN {parser->cmd_pop_state();} integer 
 	{$$ = $4;}
 /* ERROR_CHECK_BEGIN */
-| PRIORITY {cmd_pop_state();} integer
-  {$$ = NULL; print_err_msg(locl(@1), locf(@3), "':=' missing after 'PRIORITY' in task initialization."); yynerrs++;}
-| PRIORITY ASSIGN {cmd_pop_state();} error
+| PRIORITY {parser->cmd_pop_state();} integer
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@3), "':=' missing after 'PRIORITY' in task initialization."); yynerrs++;}
+| PRIORITY ASSIGN {parser->cmd_pop_state();} error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@4), "no priority number defined in 'PRIORITY' statement of task initialization.");}
-	 else {print_err_msg(locf(@4), locl(@4), "invalid priority number in 'PRIORITY' statement of task initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@4), "no priority number defined in 'PRIORITY' statement of task initialization.");}
+	 else {parser->print_err_msg(locf(@4), locl(@4), "invalid priority number in 'PRIORITY' statement of task initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6261,53 +6250,53 @@ program_configuration:
 //  PROGRAM [RETAIN | NON_RETAIN] program_name [WITH task_name] ':' program_type_name ['(' prog_conf_elements ')'] //
   PROGRAM program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
 	{$$ = new program_configuration_c(NULL, $2, $3, $5, $6, locloc(@$));
-	 variable_name_symtable.insert($2, prev_declared_program_name_token);
+	 parser->variable_name_symtable.insert($2, prev_declared_program_name_token);
 	}
 | PROGRAM RETAIN program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
 	{$$ = new program_configuration_c(new retain_option_c(locloc(@2)), $3, $4, $6, $7, locloc(@$));
-	 variable_name_symtable.insert($3, prev_declared_program_name_token);
+	 parser->variable_name_symtable.insert($3, prev_declared_program_name_token);
 	}
 | PROGRAM NON_RETAIN program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
 	{$$ = new program_configuration_c(new non_retain_option_c(locloc(@2)), $3, $4, $6, $7, locloc(@$));
-	 variable_name_symtable.insert($3, prev_declared_program_name_token);
+	 parser->variable_name_symtable.insert($3, prev_declared_program_name_token);
 	}
 /* ERROR_CHECK_BEGIN */
 | PROGRAM program_name optional_task_name ':' identifier optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@5), locl(@5), "invalid program type name after ':' in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@5), locl(@5), "invalid program type name after ':' in program configuration."); yynerrs++;}
 | PROGRAM RETAIN program_name optional_task_name ':' identifier optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@6), locl(@6), "invalid program type name after ':' in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@6), locl(@6), "invalid program type name after ':' in program configuration."); yynerrs++;}
 | PROGRAM NON_RETAIN program_name optional_task_name ':' identifier optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@6), locl(@6), "invalid program type name after ':' in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@6), locl(@6), "invalid program type name after ':' in program configuration."); yynerrs++;}
 | PROGRAM error program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'PROGRAM' in program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'PROGRAM' in program configuration."); yyerrok;}
 | PROGRAM RETAIN error program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'RETAIN' in retentive program configuration."); yyerrok;}
 | PROGRAM NON_RETAIN error program_name optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "unexpected token after 'NON_RETAIN' in non-retentive program configuration."); yyerrok;}
 | PROGRAM optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no program name defined in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no program name defined in program configuration."); yynerrs++;}
 | PROGRAM RETAIN optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "no program name defined in retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no program name defined in retentive program configuration."); yynerrs++;}
 | PROGRAM NON_RETAIN optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "no program name defined in non-retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no program name defined in non-retentive program configuration."); yynerrs++;}
 | PROGRAM error optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid program name defined in program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid program name defined in program configuration."); yyerrok;}
 | PROGRAM RETAIN error optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid program name defined in retentive program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid program name defined in retentive program configuration."); yyerrok;}
 | PROGRAM NON_RETAIN error optional_task_name ':' prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid program name defined in non-retentive program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid program name defined in non-retentive program configuration."); yyerrok;}
 | PROGRAM program_name optional_task_name prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "':' missing after program name or optional task name in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "':' missing after program name or optional task name in program configuration."); yynerrs++;}
 | PROGRAM RETAIN program_name optional_task_name prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "':' missing after program name or optional task name in retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "':' missing after program name or optional task name in retentive program configuration."); yynerrs++;}
 | PROGRAM NON_RETAIN program_name optional_task_name prev_declared_program_type_name optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "':' missing after program name or optional task name in non-retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "':' missing after program name or optional task name in non-retentive program configuration."); yynerrs++;}
 | PROGRAM program_name optional_task_name ':' optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "no program type defined in program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "no program type defined in program configuration."); yynerrs++;}
 | PROGRAM RETAIN program_name optional_task_name ':' optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@5), locf(@6), "no program type defined in retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "no program type defined in retentive program configuration."); yynerrs++;}
 | PROGRAM NON_RETAIN program_name optional_task_name ':' optional_prog_conf_elements
-  {$$ = NULL; print_err_msg(locl(@5), locf(@6), "no program type defined in non-retentive program configuration."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "no program type defined in non-retentive program configuration."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6320,8 +6309,8 @@ optional_task_name:
 /* ERROR_CHECK_BEGIN */
 | WITH error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no task name defined in optional task name of program configuration.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid task name in optional task name of program configuration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no task name defined in optional task name of program configuration.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid task name in optional task name of program configuration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6335,9 +6324,9 @@ optional_prog_conf_elements:
 	{$$ = $2;}
 /* ERROR_CHECK_BEGIN */
 | '(' error ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid program configuration elements in program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid program configuration elements in program configuration."); yyerrok;}
 | '(' prog_conf_elements error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing at the end of program configuration elements in program configuration."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing at the end of program configuration elements in program configuration."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6349,11 +6338,11 @@ prog_conf_elements:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | prog_conf_elements prog_conf_element
-  {$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in program configuration elements list."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in program configuration elements list."); yynerrs++;}
 | prog_conf_elements ',' error
   {$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value defined for program configuration element in program configuration list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value for program configuration element in program configuration list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value defined for program configuration element in program configuration list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value for program configuration element in program configuration list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6377,8 +6366,8 @@ fb_task:
 /* ERROR_CHECK_BEGIN */
 | any_identifier WITH error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no task name defined in function block configuration.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid task name in function block configuration."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no task name defined in function block configuration.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid task name in function block configuration."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6422,21 +6411,21 @@ prog_cnxn:
 	{$$ = new prog_cnxn_sendto_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | any_symbolic_variable constant
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing between parameter and value in program configuration element."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing between parameter and value in program configuration element."); yynerrs++;}
 | any_symbolic_variable enumerated_value
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing between parameter and value in program configuration element."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing between parameter and value in program configuration element."); yynerrs++;}
 | any_symbolic_variable data_sink
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' or '=>' missing between parameter and variable in program configuration element."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' or '=>' missing between parameter and variable in program configuration element."); yynerrs++;}
 | any_symbolic_variable ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no value or variable defined in program configuration assignment element.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid value or variable in program configuration assignment element."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no value or variable defined in program configuration assignment element.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid value or variable in program configuration assignment element."); yyclearin;}
 	 yyerrok;
 	}
 | any_symbolic_variable SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no variable defined in program configuration sendto element.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid variable in program configuration sendto element."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no variable defined in program configuration sendto element.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid variable in program configuration sendto element."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6459,13 +6448,13 @@ instance_specific_initializations:
 	{$$ = new instance_specific_initializations_c($2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | VAR_CONFIG END_VAR
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "no variable declared in configuration variable(s) initialization."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no variable declared in configuration variable(s) initialization."); yynerrs++;}
 | VAR_CONFIG error instance_specific_init_list END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_CONFIG' in configuration variable(s) initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unexpected token after 'VAR_CONFIG' in configuration variable(s) initialization."); yyerrok;}
 | VAR_CONFIG instance_specific_init_list error END_OF_INPUT
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed configuration variable(s) initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed configuration variable(s) initialization."); yyerrok;}
 | VAR_CONFIG error END_VAR
-	{$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in configuration variable(s) initialization."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in configuration variable(s) initialization."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6477,15 +6466,15 @@ instance_specific_init_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | error ';'
-  {$$ = new instance_specific_init_list_c(locloc(@$)); print_err_msg(locf(@1), locl(@1), "invalid configuration variable initialization."); yyerrok;}
+  {$$ = new instance_specific_init_list_c(locloc(@$)); parser->print_err_msg(locf(@1), locl(@1), "invalid configuration variable initialization."); yyerrok;}
 | instance_specific_init error
-  {$$ = new instance_specific_init_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at the end of configuration variable initialization."); yyerrok;}
+  {$$ = new instance_specific_init_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at the end of configuration variable initialization."); yyerrok;}
 | instance_specific_init_list instance_specific_init error
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at the end of configuration variable initialization."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at the end of configuration variable initialization."); yyerrok;}
 | instance_specific_init_list error ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid configuration variable initialization."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid configuration variable initialization."); yyerrok;}
 | instance_specific_init_list ';'
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after configuration variable initialization."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after configuration variable initialization."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6518,11 +6507,11 @@ fb_initialization:
 	{$$ = new fb_initialization_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | function_block_type_name structure_initialization
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':=' missing between function block name and initialization in function block initialization."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':=' missing between function block name and initialization in function block initialization."); yynerrs++;}
 | function_block_type_name ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no initial value defined in function block initialization.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid initial value in function block initialization."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no initial value defined in function block initialization.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid initial value in function block initialization."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6563,17 +6552,17 @@ il_instruction:
 	{$$ = new il_instruction_c($1, NULL, locf(@1), locl(@2));} /* locf(@1), locl(@2) is not a bug! We ignore trailing EOLs when determining symbol location! */
 /* ERROR_CHECK_BEGIN */
 | error eol_list
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid IL instruction."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid IL instruction."); yyerrok;}
 | il_incomplete_instruction error
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "EOL missing at the end of IL instruction."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "EOL missing at the end of IL instruction."); yyerrok;}
 | error ':' il_incomplete_instruction eol_list
-	{$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid label in IL instruction."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid label in IL instruction."); yyerrok;}
 | label il_incomplete_instruction eol_list
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing after label in IL instruction."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing after label in IL instruction."); yynerrs++;}
 | label ':' error eol_list
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid IL instruction."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid IL instruction."); yyerrok;}
 | label ':' il_incomplete_instruction error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "EOL missing at the end of IL instruction."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "EOL missing at the end of IL instruction."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6724,19 +6713,19 @@ il_expression:
 	{$$ = new il_expression_c($1, NULL, $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | il_expr_operator_noclash '(' eol_list error
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_noclash '(' il_operand eol_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_noclash '(' eol_list simple_instr_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_noclash '(' il_operand eol_list simple_instr_list error
-  {$$ = NULL; print_err_msg(locl(@5), locf(@6), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_clash '(' il_operand eol_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_clash '(' il_operand eol_list simple_instr_list error
-  {$$ = NULL; print_err_msg(locl(@5), locf(@6), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "')' missing at the end of IL expression."); yyerrok;}
 | il_expr_operator_clash_eol_list simple_instr_list error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing at the end of IL expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing at the end of IL expression."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6746,7 +6735,7 @@ il_jump_operation:
 	{$$ = new il_jump_operation_c($1, $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | il_jump_operator error
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid label defined in IL jump operation."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid label defined in IL jump operation."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6766,36 +6755,36 @@ il_fb_call:
 /* ERROR_CHECK_BEGIN */
 | il_call_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid function block name in IL function block call."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid function block name in IL function block call."); yyclearin;}
 	 yyerrok;
 	}
 | il_call_operator '(' ')'
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator '(' eol_list ')'
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator '(' il_operand_list ')'
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator '(' eol_list il_param_list ')'
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator error '(' ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
 | il_call_operator error '(' eol_list ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
 | il_call_operator error '(' il_operand_list ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
 | il_call_operator error '(' eol_list il_param_list ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid function block name defined in IL function block call."); yyerrok;}
 | il_call_operator prev_declared_fb_name ')'
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "'(' missing after function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'(' missing after function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator prev_declared_fb_name il_operand_list ')'
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "'(' missing after function block name defined in IL function block call."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "'(' missing after function block name defined in IL function block call."); yynerrs++;}
 | il_call_operator prev_declared_fb_name '(' error
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing at the end of IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing at the end of IL function block call."); yyerrok;}
 | il_call_operator prev_declared_fb_name '(' eol_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL function block call."); yyerrok;}
 | il_call_operator prev_declared_fb_name '(' il_operand_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL function block call."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of IL function block call."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6865,11 +6854,11 @@ il_formal_funct_call:
 	{$$ = new il_formal_funct_call_c(il_operator_c_2_poutype_identifier_c($1), $2, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | function_name_no_clashes '(' eol_list error ')'
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid parameter list defined in IL formal function call."); yyerrok;} 
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid parameter list defined in IL formal function call."); yyerrok;} 
 | function_name_simpleop_clashes '(' eol_list error ')'
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid parameter list defined in IL formal function call."); yyerrok;} 
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid parameter list defined in IL formal function call."); yyerrok;} 
 | il_expr_operator_clash_eol_list error ')'
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid parameter list defined in IL formal function call."); yyerrok;} 
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid parameter list defined in IL formal function call."); yyerrok;} 
 /* ERROR_CHECK_END */
 ;
 
@@ -6879,7 +6868,7 @@ il_expr_operator_clash_eol_list:
 	{$$ = $1;}
 /* ERROR_CHECK_BEGIN */
 | il_expr_operator_clash '(' error
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "EOL missing after '(' in IL instruction."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "EOL missing after '(' in IL instruction."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6906,11 +6895,11 @@ il_operand_list2:
 	{$$ = $1; $$->add_element($3);}
 /* ERROR_CHECK_BEGIN */
 | il_operand_list2 il_operand
-  {$$ = $1; print_err_msg(locl(@1), locf(@2), "',' missing in IL operand list."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locl(@1), locf(@2), "',' missing in IL operand list."); yynerrs++;}
 | il_operand ',' error
   {$$ = new il_operand_list_c(locloc(@$));
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no operand defined in IL operand list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid operand name in IL operand list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no operand defined in IL operand list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid operand name in IL operand list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -6934,9 +6923,9 @@ il_simple_instruction:
 	{$$ = new il_simple_instruction_c($1, locloc(@1));} /* locloc(@1) is not a bug! We ignore trailing EOLs when determining symbol location! */
 /* ERROR_CHECK_BEGIN */
 | il_expression error
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "EOL missing after expression IL instruction."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "EOL missing after expression IL instruction."); yyerrok;}
 | il_formal_funct_call error
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "EOL missing after formal function call IL instruction."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "EOL missing after formal function call IL instruction."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6962,11 +6951,11 @@ il_param_list:
 	{$$ = new il_param_list_c(locloc(@$)); $$->add_element($1);}
 /* ERROR_CHECK_BEGIN */
 | il_param_instruction_list error
-  {$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid parameter assignment in parameter assignment list."); yyerrok;}
+  {$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid parameter assignment in parameter assignment list."); yyerrok;}
 | il_param_last_instruction il_param_last_instruction
-  {$$ = new il_param_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
+  {$$ = new il_param_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
 | il_param_instruction_list il_param_last_instruction il_param_last_instruction
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6979,9 +6968,9 @@ il_param_instruction_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | il_param_last_instruction il_param_instruction
-  {$$ = new il_param_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
+  {$$ = new il_param_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
 | il_param_instruction_list il_param_last_instruction il_param_instruction
-  {$$ = $1; print_err_msg(locl(@2), locf(@3), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
+  {$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "',' missing at the end of parameter assignment in parameter assignment list."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -6991,9 +6980,9 @@ il_param_instruction:
 | il_param_out_assignment ',' eol_list
 /* ERROR_CHECK_BEGIN */
 | il_param_assignment ',' error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "EOL missing at the end of parameter assignment in parameter assignment list."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "EOL missing at the end of parameter assignment in parameter assignment list."); yyerrok;}
 | il_param_out_assignment ',' error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "EOL missing at the end of parameter out assignment in parameter assignment list."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "EOL missing at the end of parameter out assignment in parameter assignment list."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7003,9 +6992,9 @@ il_param_last_instruction:
 | il_param_out_assignment eol_list
 /* ERROR_CHECK_BEGIN */
 | il_param_assignment error
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "EOL missing at the end of last parameter assignment in parameter assignment list."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "EOL missing at the end of last parameter assignment in parameter assignment list."); yyerrok;}
 | il_param_out_assignment error
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "EOL missing at the end of last parameter out assignment in parameter assignment list."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "EOL missing at the end of last parameter out assignment in parameter assignment list."); yyerrok;}
 /* ERROR_CHECK_END */
 
 ;
@@ -7018,21 +7007,21 @@ il_param_assignment:
 	{$$ = new il_param_assignment_c($1, NULL, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | error il_operand
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid operator in parameter assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid operator in parameter assignment."); yyerrok;}
 | error '(' eol_list simple_instr_list ')'
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid operator in parameter assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid operator in parameter assignment."); yyerrok;}
 | il_assign_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no operand defined in parameter assignment.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid operand in parameter assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no operand defined in parameter assignment.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid operand in parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
 | il_assign_operator '(' eol_list ')'
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no instruction list defined in parameter assignment."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no instruction list defined in parameter assignment."); yynerrs++;}
 | il_assign_operator '(' eol_list error ')'
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid instruction list defined in parameter assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid instruction list defined in parameter assignment."); yyerrok;}
 | il_assign_operator '(' eol_list simple_instr_list error
-  {$$ = NULL; print_err_msg(locl(@4), locf(@5), "')' missing at the end of instruction list defined in parameter assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@4), locf(@5), "')' missing at the end of instruction list defined in parameter assignment."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7043,8 +7032,8 @@ il_param_out_assignment:
 /* ERROR_CHECK_BEGIN */
 | il_assign_out_operator error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no variable defined in IL operand list.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid variable in IL operand list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no variable defined in IL operand list.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid variable in IL operand list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7212,7 +7201,7 @@ il_assign_operator:
 	{$$ = new il_assign_operator_c(il_operator_c_2_identifier_c($1), locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | error ASSIGN
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid parameter defined in parameter assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid parameter defined in parameter assignment."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7285,11 +7274,11 @@ il_assign_out_operator:
 */
 /* ERROR_CHECK_BEGIN */
 | error SENDTO
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid parameter defined in parameter out assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid parameter defined in parameter out assignment."); yyerrok;}
 | NOT SENDTO
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no parameter defined in parameter out assignment."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no parameter defined in parameter out assignment."); yynerrs++;}
 | NOT error SENDTO
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid parameter defined in parameter out assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid parameter defined in parameter out assignment."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7327,8 +7316,8 @@ expression:
 /* ERROR_CHECK_BEGIN */
 | expression OR error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'OR' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'OR' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after 'OR' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after 'OR' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7357,8 +7346,8 @@ xor_expression:
 /* ERROR_CHECK_BEGIN */
 | xor_expression XOR error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'XOR' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'XOR' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after 'XOR' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after 'XOR' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7382,20 +7371,20 @@ and_expression:
 /* ERROR_CHECK_BEGIN */
 | and_expression '&' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | and_expression AND error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'AND' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'AND' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after 'AND' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after 'AND' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | and_expression AND2 error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '&' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '&' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7410,14 +7399,14 @@ comparison:
 /* ERROR_CHECK_BEGIN */
 | comparison '=' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '=' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '=' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '=' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | comparison OPER_NE error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<>' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<>' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '<>' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '<>' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7436,26 +7425,26 @@ equ_expression:
 /* ERROR_CHECK_BEGIN */
 | equ_expression '<' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '<' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '<' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression '>' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '>' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '>' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '>' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression OPER_LE error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '<=' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '<=' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '<=' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '<=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | equ_expression OPER_GE error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '>=' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '>=' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '>=' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '>=' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7474,14 +7463,14 @@ add_expression:
 /* ERROR_CHECK_BEGIN */
 | add_expression '+' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '+' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '+' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '+' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '+' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | add_expression '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '-' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '-' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '-' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '-' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7502,20 +7491,20 @@ term:
 /* ERROR_CHECK_BEGIN */
 | term '*' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '*' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '*' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '*' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '*' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | term '/' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '/' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '/' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '/' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '/' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | term MOD error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after 'MOD' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after 'MOD' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after 'MOD' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after 'MOD' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7532,8 +7521,8 @@ power_expression:
 /* ERROR_CHECK_BEGIN */
 | power_expression OPER_EXP error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after '**' in ST expression.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after '**' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after '**' in ST expression.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after '**' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7549,14 +7538,14 @@ unary_expression:
 /* ERROR_CHECK_BEGIN */
 | '-' error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no expression defined after '-' in ST expression.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid expression after '-' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no expression defined after '-' in ST expression.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid expression after '-' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 | NOT error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@1), locf(@2), "no expression defined after 'NOT' in ST expression.");}
-	 else {print_err_msg(locf(@2), locl(@2), "invalid expression after 'NOT' in ST expression."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@1), locf(@2), "no expression defined after 'NOT' in ST expression.");}
+	 else {parser->print_err_msg(locf(@2), locl(@2), "invalid expression after 'NOT' in ST expression."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7627,7 +7616,7 @@ non_int_or_real_primary_expression:
 |  function_invocation
 /* ERROR_CHECK_BEGIN */
 | '(' expression error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing at the end of expression in ST expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing at the end of expression in ST expression."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7642,7 +7631,7 @@ primary_expression:
 |  function_invocation
 /* ERROR_CHECK_BEGIN */
 | '(' expression error
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing at the end of expression in ST expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing at the end of expression in ST expression."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7682,20 +7671,20 @@ function_invocation:
 	{$$ = new function_invocation_c($1, NULL, $3, locloc(@$)); if (NULL == dynamic_cast<poutype_identifier_c*>($1)) ERROR;} // $1 should be a poutype_identifier_c
 | function_name_no_NOT_clashes '(' ')'
 	{if (NULL == dynamic_cast<poutype_identifier_c*>($1)) ERROR; // $1 should be a poutype_identifier_c
-	 if (runtime_options.allow_missing_var_in)
+	 if (parser->runtime_options.allow_missing_var_in)
 		{$$ = new function_invocation_c($1, NULL, NULL, locloc(@$));}
 	 else
-		{$$ = NULL; print_err_msg(locl(@2), locf(@3), "no parameter defined in function invocation of ST expression."); yynerrs++;}
+		{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "no parameter defined in function invocation of ST expression."); yynerrs++;}
 	}
 /* ERROR_CHECK_BEGIN */ 
 | function_name_no_NOT_clashes param_assignment_formal_list ')'
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "'(' missing after function name in ST expression."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'(' missing after function name in ST expression."); yynerrs++;}
 | function_name_no_NOT_clashes '(' error ')'
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid parameter(s) defined in function invocation of ST expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid parameter(s) defined in function invocation of ST expression."); yyerrok;}
 | function_name_no_NOT_clashes '(' param_assignment_formal_list error
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing at the end of function invocation in ST expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing at the end of function invocation in ST expression."); yyerrok;}
 | function_name_no_NOT_clashes '(' param_assignment_nonformal_list error
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing at the end of function invocation in ST expression."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing at the end of function invocation in ST expression."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7714,13 +7703,13 @@ statement_list:
 	{$$ = $1; $$->add_element($2);}
 /* ERROR_CHECK_BEGIN */
 | statement error
-	{$$ = new statement_list_c(locloc(@$)); print_err_msg(locl(@1), locf(@2), "';' missing at the end of statement in ST statement."); yyerrok;}
+	{$$ = new statement_list_c(locloc(@$)); parser->print_err_msg(locl(@1), locf(@2), "';' missing at the end of statement in ST statement."); yyerrok;}
 | statement_list statement error
-	{$$ = $1; print_err_msg(locl(@2), locf(@3), "';' missing at the end of statement in ST statement."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locl(@2), locf(@3), "';' missing at the end of statement in ST statement."); yyerrok;}
 | statement_list error ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "invalid statement in ST statement."); yyerrok;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "invalid statement in ST statement."); yyerrok;}
 | statement_list ';'
-	{$$ = $1; print_err_msg(locf(@2), locl(@2), "unexpected ';' after statement in ST statement."); yynerrs++;}
+	{$$ = $1; parser->print_err_msg(locf(@2), locl(@2), "unexpected ';' after statement in ST statement."); yynerrs++;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7734,8 +7723,8 @@ statement:
 	{ /* This is a non-standard extension (calling a function outside an ST expression!) */
 	  /* Only allow this if command line option has been selected...                     */
 	  $$ = $1; 
-	  if (!runtime_options.allow_void_datatype) {
-	    print_err_msg(locf(@1), locl(@1), "Function invocation in ST code is not allowed outside an expression. To allow this non-standard syntax, activate the apropriate command line option."); 
+	  if (!parser->runtime_options.allow_void_datatype) {
+	    parser->print_err_msg(locf(@1), locl(@1), "Function invocation in ST code is not allowed outside an expression. To allow this non-standard syntax, activate the apropriate command line option."); 
 	    yynerrs++;
 	  }
 	}  
@@ -7750,11 +7739,11 @@ assignment_statement:
 	{$$ = new assignment_statement_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | error ASSIGN expression
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "invalid variable before ':=' in ST assignment statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "invalid variable before ':=' in ST assignment statement."); yyerrok;}
 | variable ASSIGN error
 	{$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined after ':=' in ST assignment statement.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression after ':=' in ST assignment statement."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined after ':=' in ST assignment statement.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression after ':=' in ST assignment statement."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7786,17 +7775,17 @@ fb_invocation:
 	{$$ = new fb_invocation_c($1, NULL, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | prev_declared_fb_name ')'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'(' missing after function block name in ST statement."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'(' missing after function block name in ST statement."); yynerrs++;}
 | prev_declared_fb_name param_assignment_formal_list ')'
-	{$$ = NULL; print_err_msg(locl(@1), locf(@2), "'(' missing after function block name in ST statement."); yynerrs++;}
+	{$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "'(' missing after function block name in ST statement."); yynerrs++;}
 | prev_declared_fb_name '(' error ')'
-	{$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid parameter list in function block invocation in ST statement."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid parameter list in function block invocation in ST statement."); yyerrok;}
 | prev_declared_fb_name '(' error
-	{$$ = NULL; print_err_msg(locl(@2), locf(@3), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
 | prev_declared_fb_name '(' param_assignment_formal_list error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
 | prev_declared_fb_name '(' param_assignment_nonformal_list error
-	{$$ = NULL; print_err_msg(locl(@3), locf(@4), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
+	{$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "')' missing after parameter list of function block invocation in ST statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -7813,8 +7802,8 @@ param_assignment_formal_list:
 /* ERROR_CHECK_BEGIN */
 | param_assignment_formal_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7832,8 +7821,8 @@ param_assignment_nonformal_list:
 /* ERROR_CHECK_BEGIN */
 | param_assignment_nonformal_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no parameter assignment defined in ST parameter assignment list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid parameter assignment in ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -7914,45 +7903,45 @@ param_assignment_formal:
 /* ERROR_CHECK_BEGIN */
 | any_identifier ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
 | en_identifier ASSIGN error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter assignment.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter assignment."); yyclearin;}
 	 yyerrok;
 	}
 | sendto_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
 	 yyerrok;
 	}
 /*
 | eno_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no expression defined in ST formal parameter out assignment.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid expression in ST formal parameter out assignment."); yyclearin;}
 	 yyerrok;
 	}
 */
 | NOT SENDTO variable
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no parameter name defined in ST formal parameter out negated assignment."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no parameter name defined in ST formal parameter out negated assignment."); yynerrs++;}
 | NOT error SENDTO variable
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid parameter name defined in ST formal parameter out negated assignment."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid parameter name defined in ST formal parameter out negated assignment."); yyerrok;}
 | NOT sendto_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
-	 else {print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
+	 else {parser->print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
 	 yyerrok;
 	}
 /*
 | NOT eno_identifier SENDTO error
   {$$ = NULL;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
-	 else {print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@3), locf(@4), "no expression defined in ST formal parameter out negated assignment.");}
+	 else {parser->print_err_msg(locf(@4), locl(@4), "invalid expression in ST formal parameter out negated assignment."); yyclearin;}
 	 yyerrok;
 	}
 */
@@ -7979,33 +7968,33 @@ if_statement:
 	{$$ = new if_statement_c($2, $4, $5, $7, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | IF THEN statement_list elseif_statement_list END_IF
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'IF' statement."); yynerrs++;}
 | IF THEN statement_list elseif_statement_list ELSE statement_list END_IF
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'IF' statement."); yynerrs++;}
 | IF error THEN statement_list elseif_statement_list END_IF
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'IF' statement."); yyerrok;}
 | IF error THEN statement_list elseif_statement_list ELSE statement_list END_IF
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'IF' statement."); yyerrok;}
 | IF expression error statement_list elseif_statement_list END_IF
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in ST 'IF' statement."); yyerrok;}
 | IF expression error statement_list elseif_statement_list ELSE statement_list END_IF
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in ST 'IF' statement."); yyerrok;}
 | IF expression THEN elseif_statement_list END_IF
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no statement defined after 'THEN' in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no statement defined after 'THEN' in ST 'IF' statement."); yynerrs++;}
 | IF expression THEN elseif_statement_list ELSE statement_list END_IF
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no statement defined after 'THEN' in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no statement defined after 'THEN' in ST 'IF' statement."); yynerrs++;}
 | IF expression THEN statement_list elseif_statement_list ELSE END_IF
-  {$$ = NULL; print_err_msg(locl(@6), locf(@7), "no statement defined after 'ELSE' in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@6), locf(@7), "no statement defined after 'ELSE' in ST 'IF' statement."); yynerrs++;}
 | IF expression THEN statement_list elseif_statement_list ELSE error END_IF
-  {$$ = NULL; print_err_msg(locf(@7), locl(@7), "invalid statement defined after 'ELSE' in ST 'IF' statement."); yynerrs++; yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@7), locl(@7), "invalid statement defined after 'ELSE' in ST 'IF' statement."); yynerrs++; yyerrok;}
 | IF expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed 'IF' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed 'IF' statement in ST."); yyerrok;}
 | IF expression THEN statement_list elseif_statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed 'IF' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed 'IF' statement in ST."); yynerrs++;}
 | IF expression THEN statement_list elseif_statement_list ELSE statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed 'IF' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed 'IF' statement in ST."); yynerrs++;}
 | IF error END_IF
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in ST 'IF' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8023,13 +8012,13 @@ elseif_statement:
 	{$$ = new elseif_statement_c($2, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | ELSIF THEN statement_list
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined for 'ELSEIF' statement in ST 'IF' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined for 'ELSEIF' statement in ST 'IF' statement."); yynerrs++;}
 | ELSIF error THEN statement_list
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for 'ELSEIF' statement in ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for 'ELSEIF' statement in ST 'IF' statement."); yyerrok;}
 | ELSIF expression error statement_list
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in 'ELSEIF' statement of ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'THEN' after test expression in 'ELSEIF' statement of ST 'IF' statement."); yyerrok;}
 | ELSIF expression THEN error
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid statement list in 'ELSEIF' statement of ST 'IF' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid statement list in 'ELSEIF' statement of ST 'IF' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8041,37 +8030,37 @@ case_statement:
 	{$$ = new case_statement_c($2, $4, $6, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | CASE OF case_element_list END_CASE
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'CASE' statement."); yynerrs++;}
 | CASE OF case_element_list ELSE statement_list END_CASE
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'CASE' statement."); yynerrs++;}
 | CASE error OF case_element_list END_CASE
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'CASE' statement."); yyerrok;}
 | CASE error OF case_element_list ELSE statement_list END_CASE
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'CASE' statement."); yyerrok;}
 | CASE expression error case_element_list END_CASE
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'OF' after test expression in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'OF' after test expression in ST 'CASE' statement."); yyerrok;}
 | CASE expression error case_element_list ELSE statement_list END_CASE
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'OF' after test expression in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'OF' after test expression in ST 'CASE' statement."); yyerrok;}
 | CASE expression OF END_CASE
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no case element(s) defined after 'OF' in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no case element(s) defined after 'OF' in ST 'CASE' statement."); yynerrs++;}
 | CASE expression OF ELSE statement_list END_CASE
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no case element(s) defined after 'OF' in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no case element(s) defined after 'OF' in ST 'CASE' statement."); yynerrs++;}
 | CASE expression OF error END_CASE
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid case element(s) defined after 'OF' in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid case element(s) defined after 'OF' in ST 'CASE' statement."); yyerrok;}
 | CASE expression OF error ELSE statement_list END_CASE
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid case element(s) defined after 'OF' in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid case element(s) defined after 'OF' in ST 'CASE' statement."); yyerrok;}
 | CASE expression OF case_element_list ELSE END_CASE
-  {$$ = NULL; print_err_msg(locl(@5), locf(@6), "no statement defined after 'ELSE' in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@5), locf(@6), "no statement defined after 'ELSE' in ST 'CASE' statement."); yynerrs++;}
 | CASE expression OF case_element_list ELSE error END_CASE
-  {$$ = NULL; print_err_msg(locf(@6), locl(@6), "invalid statement defined after 'ELSE' in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@6), locl(@6), "invalid statement defined after 'ELSE' in ST 'CASE' statement."); yyerrok;}
 | CASE expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@2), "unclosed 'CASE' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@2), "unclosed 'CASE' statement in ST."); yyerrok;}
 | CASE expression OF case_element_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed 'CASE' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed 'CASE' statement in ST."); yynerrs++;}
 | CASE expression OF case_element_list ELSE statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@3), "unclosed 'CASE' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@3), "unclosed 'CASE' statement in ST."); yynerrs++;}
 | CASE error END_CASE
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in ST 'CASE' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8090,9 +8079,9 @@ case_element:
 	{$$ = new case_element_c($1, $3, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | case_list statement_list
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "':' missing after case list in ST 'CASE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "':' missing after case list in ST 'CASE' statement."); yynerrs++;}
 | case_list ':' error
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "invalid statement in case element of ST 'CASE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "invalid statement in case element of ST 'CASE' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8105,8 +8094,8 @@ case_list:
 /* ERROR_CHECK_BEGIN */
 | case_list ',' error
   {$$ = $1;
-	 if (is_current_syntax_token(yychar)) {print_err_msg(locl(@2), locf(@3), "no case defined in case list of ST parameter assignment list.");}
-	 else {print_err_msg(locf(@3), locl(@3), "invalid case in case list of ST parameter assignment list."); yyclearin;}
+	 if (is_current_syntax_token(yychar)) {parser->print_err_msg(locl(@2), locf(@3), "no case defined in case list of ST parameter assignment list.");}
+	 else {parser->print_err_msg(locf(@3), locl(@3), "invalid case in case list of ST parameter assignment list."); yyclearin;}
 	 yyerrok;
 	}
 /* ERROR_CHECK_END */
@@ -8141,59 +8130,59 @@ for_statement:
 	{$$ = new for_statement_c($2, $4, $6, NULL, $8, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | FOR ASSIGN expression TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no control variable defined in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no control variable defined in ST 'FOR' statement."); yynerrs++;}
 | FOR ASSIGN expression TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no control variable defined in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no control variable defined in ST 'FOR' statement."); yynerrs++;}
 | FOR error ASSIGN expression TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid control variable defined for ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid control variable defined for ST 'FOR' statement."); yyerrok;}
 | FOR error ASSIGN expression TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid control variable defined for ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid control variable defined for ST 'FOR' statement."); yyerrok;}
 | FOR control_variable expression TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "':=' missing between control variable and start expression in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':=' missing between control variable and start expression in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable expression TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@2), locf(@3), "':=' missing between control variable and start expression in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@2), locf(@3), "':=' missing between control variable and start expression in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable error expression TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting ':=' between control variable and start expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting ':=' between control variable and start expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable error expression TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting ':=' between control variable and start expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting ':=' between control variable and start expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no start expression defined in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no start expression defined in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable ASSIGN TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no start expression defined in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no start expression defined in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable ASSIGN error TO expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid start expression defined in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid start expression defined in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN error TO expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid start expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid start expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression error expression BY expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@5), locl(@5), "expecting 'TO' between start expression and end expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@5), locl(@5), "expecting 'TO' between start expression and end expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression error expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@5), locl(@5), "expecting 'TO' between start expression and end expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@5), locl(@5), "expecting 'TO' between start expression and end expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression error expression DO statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@7), locl(@7), "expecting 'BY' between end expression and step expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@7), locl(@7), "expecting 'BY' between end expression and step expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression BY expression error statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@9), locl(@9), "expecting 'DO' after step expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@9), locl(@9), "expecting 'DO' after step expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression error statement_list END_FOR
-  {$$ = NULL; print_err_msg(locf(@7), locl(@7), "expecting 'DO' after end expression in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@7), locl(@7), "expecting 'DO' after end expression in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression BY expression DO END_FOR
-  {$$ = NULL; print_err_msg(locl(@9), locf(@10), "no statement(s) defined after 'DO' in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@9), locf(@10), "no statement(s) defined after 'DO' in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable ASSIGN expression TO expression DO END_FOR
-  {$$ = NULL; print_err_msg(locl(@7), locf(@8), "no statement(s) defined after 'DO' in ST 'FOR' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@7), locf(@8), "no statement(s) defined after 'DO' in ST 'FOR' statement."); yynerrs++;}
 | FOR control_variable ASSIGN expression TO expression BY expression DO error END_FOR
-  {$$ = NULL; print_err_msg(locf(@10), locl(@10), "invalid statement(s) defined after 'DO' in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@10), locl(@10), "invalid statement(s) defined after 'DO' in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression DO error END_FOR
-  {$$ = NULL; print_err_msg(locf(@8), locl(@8), "invalid statement(s) defined after 'DO' in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@8), locl(@8), "invalid statement(s) defined after 'DO' in ST 'FOR' statement."); yyerrok;}
 | FOR control_variable error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
 | FOR control_variable ASSIGN expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression DO statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yynerrs++;}
 | FOR control_variable ASSIGN expression TO expression BY expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yyerrok;}
 | FOR control_variable ASSIGN expression TO expression BY expression DO statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'FOR' statement in ST."); yynerrs++;}
 | FOR error END_FOR
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in ST 'FOR' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in ST 'FOR' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8229,21 +8218,21 @@ while_statement:
 	{$$ = new while_statement_c($2, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | WHILE DO statement_list END_WHILE
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'WHILE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no test expression defined in ST 'WHILE' statement."); yynerrs++;}
 | WHILE error DO statement_list END_WHILE
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'WHILE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid test expression defined for ST 'WHILE' statement."); yyerrok;}
 | WHILE expression error statement_list END_WHILE
-  {$$ = NULL; print_err_msg(locf(@3), locl(@3), "expecting 'DO' after test expression in ST 'WHILE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@3), locl(@3), "expecting 'DO' after test expression in ST 'WHILE' statement."); yyerrok;}
 | WHILE expression DO END_WHILE
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no statement(s) defined after 'DO' in ST 'WHILE' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no statement(s) defined after 'DO' in ST 'WHILE' statement."); yynerrs++;}
 | WHILE expression DO error END_WHILE
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid statement(s) defined after 'DO' in ST 'WHILE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid statement(s) defined after 'DO' in ST 'WHILE' statement."); yyerrok;}
 | WHILE expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'WHILE' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'WHILE' statement in ST."); yyerrok;}
 | WHILE expression DO statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'WHILE' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'WHILE' statement in ST."); yynerrs++;}
 | WHILE error END_WHILE
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in ST 'WHILE' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in ST 'WHILE' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8253,19 +8242,19 @@ repeat_statement:
 	{$$ = new repeat_statement_c($2, $4, locloc(@$));}
 /* ERROR_CHECK_BEGIN */
 | REPEAT UNTIL expression END_REPEAT
-  {$$ = NULL; print_err_msg(locl(@1), locf(@2), "no statement(s) defined after 'REPEAT' in ST 'REPEAT' statement."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locl(@1), locf(@2), "no statement(s) defined after 'REPEAT' in ST 'REPEAT' statement."); yynerrs++;}
 | REPEAT error UNTIL expression END_REPEAT
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "invalid statement(s) defined after 'REPEAT' for ST 'REPEAT' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "invalid statement(s) defined after 'REPEAT' for ST 'REPEAT' statement."); yyerrok;}
 | REPEAT statement_list UNTIL END_REPEAT
-  {$$ = NULL; print_err_msg(locl(@3), locf(@4), "no test expression defined after 'UNTIL' in ST 'REPEAT' statement.");}
+  {$$ = NULL; parser->print_err_msg(locl(@3), locf(@4), "no test expression defined after 'UNTIL' in ST 'REPEAT' statement.");}
 | REPEAT statement_list UNTIL error END_REPEAT
-  {$$ = NULL; print_err_msg(locf(@4), locl(@4), "invalid test expression defined after 'UNTIL' in ST 'REPEAT' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@4), locl(@4), "invalid test expression defined after 'UNTIL' in ST 'REPEAT' statement."); yyerrok;}
 | REPEAT statement_list END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'REPEAT' statement in ST."); yynerrs++;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'REPEAT' statement in ST."); yynerrs++;}
 | REPEAT statement_list UNTIL expression error END_OF_INPUT
-  {$$ = NULL; print_err_msg(locf(@1), locl(@1), "unclosed 'REPEAT' statement in ST."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@1), locl(@1), "unclosed 'REPEAT' statement in ST."); yyerrok;}
 | REPEAT error END_REPEAT
-  {$$ = NULL; print_err_msg(locf(@2), locl(@2), "unknown error in ST 'REPEAT' statement."); yyerrok;}
+  {$$ = NULL; parser->print_err_msg(locf(@2), locl(@2), "unknown error in ST 'REPEAT' statement."); yyerrok;}
 /* ERROR_CHECK_END */
 ;
 
@@ -8334,7 +8323,7 @@ bool allow_ref_to_in_derived_datatypes = false;
  * the error itself, so we cannot print out the correct line numbers of the error location
  * over here.
  * Our solution is to store the current error message in a global variable, and have all
- * error action handlers call the function print_err_msg() after setting the location
+ * error action handlers call the function parser->print_err_msg() after setting the location
  * (line number) variable correctly.
  */
 const char *current_error_msg;
@@ -8376,34 +8365,6 @@ bool is_current_syntax_token(int token) {
   }
 }
 /* ERROR_CHECK_END */
-
-
-void print_err_msg(int first_line,
-                   int first_column,
-                   const char *first_filename,
-                   long int first_order,
-                   int last_line,
-                   int last_column,
-                   const char *last_filename,
-                   long int last_order,
-                   const char *additional_error_msg) {
-
-  const char *unknown_file = "<unknown_file>";
-  if (first_filename == NULL) first_filename = unknown_file;
-  if ( last_filename == NULL)  last_filename = unknown_file;
-
-  if (runtime_options.full_token_loc) {
-    if (first_filename == last_filename)
-      fprintf(stderr, "%s:%d-%d..%d-%d: error: %s\n", first_filename, first_line, first_column, last_line, last_column, additional_error_msg);
-    else
-      fprintf(stderr, "%s:%d-%d..%s:%d-%d: error: %s\n", first_filename, first_line, first_column, last_filename, last_line, last_column, additional_error_msg);
-  } else {
-      fprintf(stderr, "%s:%d: error: %s\n", first_filename, first_line, additional_error_msg);
-  }
-  //fprintf(stderr, "error %d: %s\n", yynerrs /* a global variable */, additional_error_msg);
-  //print_include_stack();
-}
-
 
 
 /* If function overloading is on, we allow several functions with the same name.
