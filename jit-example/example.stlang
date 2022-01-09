@@ -1,0 +1,16 @@
+FUNCTION_BLOCK test
+	VAR_INPUT
+		a, b, c : LREAL
+	END_VAR
+	VAR_OUTPUT
+		res : LREAL
+	END_VAR
+	VAR
+		d : LREAL
+	END_VAR
+
+	d := c_func(f1 := a, f2 := b);
+
+	res := d * c;
+
+END_FUNCTION_BLOCK
