@@ -71,6 +71,7 @@
   </ImportGroup>
   <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\x64\Release\.conan\conanbuildinfo.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -150,6 +151,20 @@
     <ClCompile Include="parser.cpp" />
     <ClCompile Include="parser.flex.cpp" />
     <ClCompile Include="parser.tab.cpp" />
+    <ClCompile Include="stage3\array_range_check.cpp" />
+    <ClCompile Include="stage3\case_elements_check.cpp" />
+    <ClCompile Include="stage3\constant_folding.cpp" />
+    <ClCompile Include="stage3\datatype_functions.cpp" />
+    <ClCompile Include="stage3\declaration_check.cpp" />
+    <ClCompile Include="stage3\enum_declaration_check.cpp" />
+    <ClCompile Include="stage3\fill_candidate_datatypes.cpp" />
+    <ClCompile Include="stage3\flow_control_analysis.cpp" />
+    <ClCompile Include="stage3\forced_narrow_candidate_datatypes.cpp" />
+    <ClCompile Include="stage3\lvalue_check.cpp" />
+    <ClCompile Include="stage3\narrow_candidate_datatypes.cpp" />
+    <ClCompile Include="stage3\print_datatypes_error.cpp" />
+    <ClCompile Include="stage3\remove_forward_dependencies.cpp" />
+    <ClCompile Include="stage3\stage3.cpp" />
     <ClCompile Include="visitor.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -168,6 +183,20 @@
     <ClCompile Include="flex_priv.cpp" />
     <ClInclude Include="parser.h" />
     <ClInclude Include="parser_priv.h" />
+    <ClInclude Include="stage3\array_range_check.h" />
+    <ClInclude Include="stage3\case_elements_check.h" />
+    <ClInclude Include="stage3\constant_folding.h" />
+    <ClInclude Include="stage3\datatype_functions.h" />
+    <ClInclude Include="stage3\declaration_check.h" />
+    <ClInclude Include="stage3\enum_declaration_check.h" />
+    <ClInclude Include="stage3\fill_candidate_datatypes.h" />
+    <ClInclude Include="stage3\flow_control_analysis.h" />
+    <ClInclude Include="stage3\forced_narrow_candidate_datatypes.h" />
+    <ClInclude Include="stage3\lvalue_check.h" />
+    <ClInclude Include="stage3\narrow_candidate_datatypes.h" />
+    <ClInclude Include="stage3\print_datatypes_error.h" />
+    <ClInclude Include="stage3\remove_forward_dependencies.h" />
+    <ClInclude Include="stage3\stage3.h" />
     <ClInclude Include="symtable.h" />
     <ClInclude Include="symtable.hxx" />
     <ClInclude Include="traking.h" />

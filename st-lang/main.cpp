@@ -22,7 +22,7 @@ int main() {
     //parser_t* test = (parser_t*)yyget_extra(scanner);
 
     int rv = yyparse(scanner, &parser);
-
+    symbol_c* ordered_root;
     yylex_destroy(scanner);
     return 0;
 }

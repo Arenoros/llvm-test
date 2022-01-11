@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\stage3">
+      <UniqueIdentifier>{1b79b5b3-ccee-48c5-96c8-51d03dc46b4c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\stage3">
+      <UniqueIdentifier>{4f95ef70-85dc-4dd2-baef-3ae55a18a031}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -38,6 +44,48 @@
     </ClCompile>
     <ClCompile Include="parser.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\stage3.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\remove_forward_dependencies.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\print_datatypes_error.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\narrow_candidate_datatypes.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\lvalue_check.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\forced_narrow_candidate_datatypes.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\flow_control_analysis.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\fill_candidate_datatypes.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\enum_declaration_check.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\declaration_check.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\datatype_functions.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\constant_folding.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\case_elements_check.cpp">
+      <Filter>Source Files\stage3</Filter>
+    </ClCompile>
+    <ClCompile Include="stage3\array_range_check.cpp">
+      <Filter>Source Files\stage3</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +126,48 @@
     </ClInclude>
     <ClInclude Include="traking.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\stage3.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\remove_forward_dependencies.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\print_datatypes_error.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\narrow_candidate_datatypes.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\lvalue_check.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\forced_narrow_candidate_datatypes.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\flow_control_analysis.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\fill_candidate_datatypes.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\enum_declaration_check.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\declaration_check.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\datatype_functions.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\constant_folding.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\case_elements_check.h">
+      <Filter>Header Files\stage3</Filter>
+    </ClInclude>
+    <ClInclude Include="stage3\array_range_check.h">
+      <Filter>Header Files\stage3</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
