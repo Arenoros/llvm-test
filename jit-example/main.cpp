@@ -20,6 +20,7 @@
 #include <vector>
 #include <string>
 #include <strstream>
+#include <llvm/Bitcode/BitcodeWriter.h>
 #include <llvm/IR/LegacyPassManager.h>
 #include <llvm/Transforms/Scalar.h>
 
@@ -132,10 +133,15 @@ namespace test {
     };
 }  // namespace test
 
-extern "C" {
-double add(double a, double b) {
+#ifdef _WIN32
+#    define DLLEXPORT __declspec(dllexport)
+#else
+#    define DLLEXPORT
+#endif
+
+/// putchard - putchar that takes a double and returns 0.
+extern "C" DLLEXPORT double add(double a, double b) {
     return a + b;
-}
 }
 
 Function* reg_function(llvm::Module& mod) {
@@ -153,10 +159,32 @@ int main() {
     InitializeNativeTarget();
     InitializeNativeTargetAsmPrinter();
     InitializeNativeTargetAsmParser();
+    ExitOnError ExitOnErr;
+    auto JIT = ExitOnErr(orc::LLJITBuilder().setNumCompileThreads(4).create());
+    // If we could not construct an instance, return an error.
+    auto& ES = JIT->getExecutionSession();
+    orc::MangleAndInterner Mangle(ES, JIT->getDataLayout());
+    orc::SymbolMap AllowList;
+    //// Register every symbol that can be accessed from the JIT'ed code.
+    AllowList[Mangle("add")] = JITEvaluatedSymbol(pointerToJITTargetAddress(&add), JITSymbolFlags());
+
+    orc::RTDyldObjectLinkingLayer ObjectLayer(ES, []() { return std::make_unique<SectionMemoryManager>(); });
+    auto& MainJD = ES.createBareJITDylib("_main1");
+
+    MainJD.define(orc::absoluteSymbols(AllowList));
+
+    MainJD.addGenerator(
+        cantFail(llvm::orc::DynamicLibrarySearchGenerator::GetForCurrentProcess(JIT->getDataLayout().getGlobalPrefix(),
+                                                                                [&](const orc::SymbolStringPtr& S) {
+                                                                                    return AllowList.count(S);
+                                                                                })));
+
+    // auto TheJIT = ExitOnErr(test::KaleidoscopeJIT::Create());
     auto Ctx = orc::ThreadSafeContext(std::make_unique<LLVMContext>());
     // Try to detect the host arch and construct an LLJIT instance.
 
     orc::ThreadSafeModule jit_module(std::make_unique<Module>("Test JIT Compiler", *Ctx.getContext()), Ctx);
+    jit_module.getModuleUnlocked()->setDataLayout(JIT->getDataLayout());
 
     auto add_fn = reg_function(*jit_module.getModuleUnlocked());
 
@@ -182,8 +210,8 @@ int main() {
     std::vector<Value*> add_args;
     add_args.push_back(temp);
     add_args.push_back(args[2]);
-    CallInst* add_call = builder.CreateCall(add_fn, add_args);
-    // auto rv = add_call->getReturnedArgOperand();
+    //CallInst* add_call = builder.CreateCall(add_fn, add_args);
+    //  auto rv = add_call->getReturnedArgOperand();
     Value* ret = builder.CreateFMul(args[2], temp, "result");
 
     builder.CreateRet(ret);
@@ -194,37 +222,30 @@ int main() {
     //                                                    llvm::GlobalValue::LinkageTypes::ExternalLinkage,
     //                                                    nullptr,
     //                                                    "c_call");
-    /*ExitOnError ExitOnErr;
-    auto TheJIT = ExitOnErr(test::KaleidoscopeJIT::Create());*/
 
     printf("Before Optimization:\n");
+    jit_module.getModuleUnlocked()->print(llvm::errs(), nullptr);
+    // jit_module.getModuleUnlocked()->dump();
 
-    jit_module.getModuleUnlocked()->dump();
+    // Optimization(jit_module.getModuleUnlocked());
 
-    Optimization(jit_module.getModuleUnlocked());
+    /*printf("After Optimization:\n");
+    jit_module.getModuleUnlocked()->dump();*/
 
-    printf("After Optimization:\n");
-    jit_module.getModuleUnlocked()->dump();
+    /*ExitOnErr(TheJIT->addModule(cloneToNewContext(jit_module)));
 
-    auto JIT = orc::LLJITBuilder().create();
-    // If we could not construct an instance, return an error.
-    if (!JIT)
-        return 1;  // JIT.takeError();
+    auto EntrySym = ExitOnErr(TheJIT->lookup("test_func"));
+    auto* Entry = reinterpret_cast<double (*)(double, double, double)>(EntrySym.getAddress());
+    double res = Entry(2, 3, 4);*/
 
     // Add the module.
-    auto Err = (*JIT)->addIRModule(cloneToNewContext(jit_module));
-    if (Err)
-        return 2;  // Err;
-    //(*JIT)->addIRModule()
-    // Look up the JIT'd code entry point.
-    auto EntrySym = (*JIT)->lookup("test_func");
-    if (!EntrySym)
-        return 3;  // EntrySym.takeError();
-    auto EntrySym1 = (*JIT)->lookup("add");
-    if (!EntrySym1)
-        return 3;  // EntrySym.takeError();
-    // Cast the entry point address to a function pointer.
-    auto* Entry = reinterpret_cast<double (*)(double, double, double)>((*EntrySym).getAddress());
+    ExitOnErr(JIT->addIRModule(cloneToNewContext(jit_module)));
+
+    auto EntrySym = ExitOnErr(JIT->lookup("test_func"));
+
+    // auto EntrySym1 = ExitOnErr(JIT->lookup("add"));
+    //  Cast the entry point address to a function pointer.
+    auto* Entry = reinterpret_cast<double (*)(double, double, double)>(EntrySym.getAddress());
 
     // Call into JIT'd code.
     double res = Entry(2, 3, 4);

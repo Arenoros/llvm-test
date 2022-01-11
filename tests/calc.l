@@ -17,7 +17,8 @@
       yylloc->last_line = yylineno;                                  \
       yylloc->last_column = yytext + yyleng - strrchr(yytext, '\n'); \
     }
-%}                                                                              
+%}
+
 %%
 
 [ \t]+            ;                                                  
